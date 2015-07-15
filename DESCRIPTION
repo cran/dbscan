@@ -1,0 +1,23 @@
+Package: dbscan
+Version: 0.9-0
+Date: 2015-7-15
+Title: Density Based Clustering of Applications with Noise (DBSCAN)
+Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
+                email = "mhahsler@lyle.smu.edu"),
+	    person("Sunil", "Arya", role = c("ctb", "cph")),
+	    person("David", "Mount", role = c("ctb", "cph")))
+Copyright: ANN library is copyright University of Maryland and Sunil
+        Arya and David Mount.
+Description: A fast reimplementation of the DBSCAN clustering algorithm using the kd-tree data structure for speedup.
+Imports: Rcpp
+Suggests: fpc, microbenchmark
+License: GPL (>= 2)
+LinkingTo: Rcpp
+NeedsCompilation: yes
+Packaged: 2015-07-16 13:44:55 UTC; hahsler
+Author: Michael Hahsler [aut, cre, cph],
+  Sunil Arya [ctb, cph],
+  David Mount [ctb, cph]
+Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
+Repository: CRAN
+Date/Publication: 2015-07-16 16:08:03
