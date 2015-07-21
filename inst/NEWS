@@ -1,1 +1,7 @@
+Version 0.9-1 (2015-07-21)
+  * Improved speed by avoiding repeated sorting of point ids.
+  * added linear NN search option.
+  * added fast calculation for kNN distance.
+  * fpc and microbenchmark are now used conditionally in the examples.
+
 Initial Release version 0.9-0 (2015-07-15)

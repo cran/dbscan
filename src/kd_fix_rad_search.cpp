@@ -101,9 +101,6 @@ int ANNkd_tree::annkFRSearch(
 std::vector<int> ANNkd_tree::annkFRSearch2(
 	ANNpoint			q,				// the query point
 	ANNdist				sqRad,			// squared radius search bound
-	int					k,				// number of near neighbors to return
-	ANNidxArray			nn_idx,			// nearest neighbor indices (returned)
-	ANNdistArray		dd,				// the approximate nearest neighbor
 	double				eps)			// the error bound
 {
 	ANNkdFRDim = dim;					// copy arguments to static equivs

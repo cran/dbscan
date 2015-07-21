@@ -1,15 +1,26 @@
+//----------------------------------------------------------------------
+// File:                        dbscan.cpp
+//----------------------------------------------------------------------
+// Copyright (c) 2015 Michael Hahsler. All Rights Reserved.
+//
+// This software is provided under the provisions of the
+// GNU General Public License (GPL) Version 3
+// (see: http://www.gnu.org/licenses/gpl-3.0.en.html)
+
+
 #include <Rcpp.h>
 #include "ANN/ANN.h"
 
 using namespace Rcpp;
 
-std::vector<int> regionQuery(int id, ANNpointArray dataPts, ANNkd_tree* kdTree,
+std::vector<int> regionQuery(int id, ANNpointArray dataPts, ANNpointSet* kdTree,
   double eps2, double approx) {
 
   // find fixed radius nearest neighbors
   ANNpoint queryPt = dataPts[id];
-  std::vector<int> ret = kdTree->annkFRSearch2(queryPt, eps2, 0, NULL, NULL, approx);
-  std::sort(ret.begin(), ret.end());
+  std::vector<int> ret = kdTree->annkFRSearch2(queryPt, eps2, approx);
+  // we use copy (instead of set_union) so we do not need to sort.
+  //std::sort(ret.begin(), ret.end());
 
   return(ret);
 }
@@ -17,8 +28,9 @@ std::vector<int> regionQuery(int id, ANNpointArray dataPts, ANNkd_tree* kdTree,
 
 // [[Rcpp::export]]
 IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
-  int bucketSize, int splitRule, double approx) {
+  int borderPoints, int type, int bucketSize, int splitRule, double approx) {
 
+  // kd-tree uses squared distances
   double eps2 = eps*eps;
 
   // copy data
@@ -30,69 +42,71 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
       (dataPts[i])[j] = data(i, j);
     }
   }
-
   //Rprintf("Points copied.\n");
 
-  // create kd-tree
-  ANNsplitRule sRule = (ANNsplitRule)  splitRule;
-  ANNkd_tree* kdTree = new ANNkd_tree(dataPts, nrow, ncol,
-    bucketSize, sRule);
-
+  // create kd-tree (1) or linear search structure (2)
+  ANNpointSet* kdTree = NULL;
+  if (type==1){
+    kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
+      (ANNsplitRule)  splitRule);
+  } else{
+    kdTree = new ANNbruteForce(dataPts, nrow, ncol);
+  }
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
 
   // DBSCAN
   std::vector<bool> visited(nrow, false);
   std::vector< std::vector<int> > clusters; // vector of vectors == list
-  std::vector<int> noise;
 
   for (int i=0; i<nrow; i++) {
     //Rprintf("processing point %d\n", i);
-
     if (visited[i]) continue;
 
     std::vector<int> N = regionQuery(i, dataPts, kdTree, eps2, approx);
-    if((int) N.size() < minPts) {
-      // noise points stay unassigned
-    } else {
+    if((int) N.size() < minPts) continue; // noise points stay unassigned for now
 
-      // start new cluster and expand
-      std::vector<int> cluster;
-      cluster.push_back(i);
-      visited[i] = true;
+    // start new cluster and expand
+    std::vector<int> cluster;
+    cluster.push_back(i);
+    visited[i] = true;
 
-      while(!N.empty()) {
-        int j = *N.begin();
-        //int j = *N.end();
-        if(visited[j]) {
-          N.erase(N.begin());
-          //N.pop_back();
-          continue; // point already processed
-        }
+    while(!N.empty()) {
+      int j = N.back();
+      N.pop_back();
 
-        visited[j] = true;
-        std::vector<int> N2 = regionQuery(j, dataPts, kdTree, eps2, approx);
-        if((int) N2.size() >= minPts) { // expand neighborhood
-          std::vector<int> dest(N.size() + N2.size());
-          std::set_union(N.begin(), N.end(), N2.begin(), N2.end(),
-            std::back_inserter(dest));
-          N = dest;
-        }
-        cluster.push_back(j);
+      if(visited[j]) continue; // point already processed
+      visited[j] = true;
+
+      std::vector<int> N2 = regionQuery(j, dataPts, kdTree, eps2, approx);
+      if((int) N2.size() >= minPts) { // expand neighborhood
+        // this is faster than set_union and does not need sort! visited takes
+        // care of duplicates.
+        std::copy(N2.begin(), N2.end(),
+          std::back_inserter(N));
       }
 
-      clusters.push_back(cluster);
+      // for DBSCAN* (borderPoints==FASLE) border points are considered noise
+      if(N2.size() >= minPts || borderPoints) cluster.push_back(j);
     }
+
+    // add cluster to list
+    clusters.push_back(cluster);
   }
 
-  // unassigned points are noise (cluster 0)
-
   // prepare cluster vector
-  IntegerVector id(nrow);
+  // unassigned points are noise (cluster 0)
+  IntegerVector id(nrow, 0);
   for(std::size_t i=0; i<clusters.size(); i++) {
     for(std::size_t j=0; j<clusters[i].size(); j++) {
       id[clusters[i][j]] = i+1;
     }
   }
 
+  // cleanup
+  delete kdTree;
+  annDeallocPts(dataPts);
+  annClose();
+
   return wrap(id);
 }
+
