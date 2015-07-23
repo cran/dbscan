@@ -6,12 +6,12 @@
 //----------------------------------------------------------------------
 // Copyright (c) 1997-2005 University of Maryland and Sunil Arya and
 // David Mount.  All Rights Reserved.
-// 
+//
 // This software and related documentation is part of the Approximate
 // Nearest Neighbor Library (ANN).  This software is provided under
 // the provisions of the Lesser GNU Public License (LGPL).  See the
 // file ../ReadMe.txt for further information.
-// 
+//
 // The University of Maryland (U.M.) and the authors make no
 // representations about the suitability or fitness of this software for
 // any purpose.  It is provided "as is" without express or implied
@@ -106,4 +106,27 @@ int ANNbruteForce::annkFRSearch(		// approx fixed-radius kNN search
 	}
 
 	return pts_in_range;
+}
+
+// MFH: version that returns all points
+std::vector<int> ANNbruteForce::annkFRSearch2(		// approx fixed-radius kNN search
+	ANNpoint			q,				// query point
+	ANNdist				sqRad,			// squared radius
+	double				eps)			// error bound
+{
+	std::vector<int> points;
+	int i;
+	int pts_in_range = 0;				// number of points in query range
+										// run every point through queue
+	for (i = 0; i < n_pts; i++) {
+										// compute distance to point
+		ANNdist sqDist = annDist(dim, pts[i], q);
+		if (sqDist <= sqRad &&			// within radius bound
+			(ANN_ALLOW_SELF_MATCH || sqDist != 0)) { // ...and no self match
+			points.push_back(i);
+			pts_in_range++;
+		}
+	}
+
+	return points;
 }
