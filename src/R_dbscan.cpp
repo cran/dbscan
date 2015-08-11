@@ -1,4 +1,5 @@
 //----------------------------------------------------------------------
+//                                DBSCAN
 // File:                        dbscan.cpp
 //----------------------------------------------------------------------
 // Copyright (c) 2015 Michael Hahsler. All Rights Reserved.
@@ -10,20 +11,9 @@
 
 #include <Rcpp.h>
 #include "ANN/ANN.h"
+#include "R_regionQuery.h"
 
 using namespace Rcpp;
-
-std::vector<int> regionQuery(int id, ANNpointArray dataPts, ANNpointSet* kdTree,
-  double eps2, double approx) {
-
-  // find fixed radius nearest neighbors
-  ANNpoint queryPt = dataPts[id];
-  std::vector<int> ret = kdTree->annkFRSearch2(queryPt, eps2, approx);
-  // we use copy (instead of set_union) so we do not need to sort.
-  //std::sort(ret.begin(), ret.end());
-
-  return(ret);
-}
 
 
 // [[Rcpp::export]]
@@ -59,11 +49,14 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
   std::vector< std::vector<int> > clusters; // vector of vectors == list
 
   for (int i=0; i<nrow; i++) {
-    //Rprintf("processing point %d\n", i);
+    //Rprintf("processing point %d\n", i+1);
+    if (!(i % 100)) Rcpp::checkUserInterrupt();
+
     if (visited[i]) continue;
 
     std::vector<int> N = regionQuery(i, dataPts, kdTree, eps2, approx);
-    if((int) N.size() < minPts) continue; // noise points stay unassigned for now
+    // Note: the neighborhood does not contain the point itself!
+    if(N.size()+1 < (size_t) minPts) continue; // noise points stay unassigned for now
 
     // start new cluster and expand
     std::vector<int> cluster;
@@ -78,7 +71,7 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
       visited[j] = true;
 
       std::vector<int> N2 = regionQuery(j, dataPts, kdTree, eps2, approx);
-      if((int) N2.size() >= minPts) { // expand neighborhood
+      if(N2.size()+1 >= (size_t) minPts) { // expand neighborhood
         // this is faster than set_union and does not need sort! visited takes
         // care of duplicates.
         std::copy(N2.begin(), N2.end(),
@@ -86,7 +79,7 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
       }
 
       // for DBSCAN* (borderPoints==FASLE) border points are considered noise
-      if(N2.size() >= minPts || borderPoints) cluster.push_back(j);
+      if(N2.size() >= (size_t) minPts || borderPoints) cluster.push_back(j);
     }
 
     // add cluster to list

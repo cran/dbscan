@@ -233,7 +233,8 @@ const int	 ANNcoordPrec	= 15;	// default precision
 //	strictly positive.
 //----------------------------------------------------------------------
 
-const ANNbool	ANN_ALLOW_SELF_MATCH	= ANNtrue;
+//const ANNbool	ANN_ALLOW_SELF_MATCH	= ANNtrue;
+const ANNbool	ANN_ALLOW_SELF_MATCH	= ANNfalse;
 
 //----------------------------------------------------------------------
 //	Norms and metrics:
@@ -510,7 +511,7 @@ class DLL_API ANNpointSet {
 		double			eps=0.0			// error bound
 		) = 0;							// pure virtual (defined elsewhere)
 
-	virtual std::vector<int> annkFRSearch2(			// approx fixed-radius kNN search
+	virtual  std::pair< std::vector<int>, std::vector<double> >  annkFRSearch2(			// approx fixed-radius kNN search
 		ANNpoint		q,				// query point
 		ANNdist			sqRad,			// squared radius
 		double			eps=0.0			// error bound
@@ -568,7 +569,7 @@ class DLL_API ANNbruteForce: public ANNpointSet {
 	    ANNdistArray	dd = NULL,		// dist to near neighbors (modified)
 	    double			eps=0.0);		// error bound
 
-    std::vector<int> annkFRSearch2(					// approx fixed-radius kNN search
+    std::pair< std::vector<int>, std::vector<double> >  annkFRSearch2(					// approx fixed-radius kNN search
 	    ANNpoint		q,				// query point
 	    ANNdist			sqRad,			// squared radius
 	    double			eps=0.0);		// error bound
@@ -772,7 +773,7 @@ class DLL_API ANNkd_tree: public ANNpointSet {
 		double			eps=0.0);		// error bound
 
 	//MFH 7/15/2015
-	std::vector<int> annkFRSearch2(					// approx fixed-radius kNN search
+	std::pair< std::vector<int>, std::vector<double> > annkFRSearch2(					// approx fixed-radius kNN search
 		ANNpoint		q,				// the query point
 		ANNdist			sqRad,			// squared radius of query ball
 		double			eps=0.0);		// error bound

@@ -1,7 +1,15 @@
+Version 0.9-2 (2015-08-11)
+  * Added kNN interface.
+  * Added frNN (fixed radius NN) interface.
+  * Added LOF.
+  * Added OPTICS.
+  * All algorithms check now for interupt (CTRL-C/Esc).
+  * DBSCAN now returns a list instead of a numeric vector.
+
 Version 0.9-1 (2015-07-21)
   * Improved speed by avoiding repeated sorting of point ids.
-  * added linear NN search option.
-  * added fast calculation for kNN distance.
+  * Added linear NN search option.
+  * Added fast calculation for kNN distance.
   * fpc and microbenchmark are now used conditionally in the examples.
 
 Initial Release version 0.9-0 (2015-07-15)

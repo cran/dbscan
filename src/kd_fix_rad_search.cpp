@@ -54,6 +54,7 @@ ANNpointArray	ANNkdFRPts;				// the points
 ANNmin_k*		ANNkdFRPointMK;			// set of k closest points
 
 std::vector<int> closest;			  // MFH: set of all closest points
+std::vector<double> dists;			  // MFH: set of all closest points
 
 int				ANNkdFRPtsVisited;		// total points visited
 int				ANNkdFRPtsInRange;		// number of points in the range
@@ -98,7 +99,7 @@ int ANNkd_tree::annkFRSearch(
 }
 
 // MFH this function returns all closest points
-std::vector<int> ANNkd_tree::annkFRSearch2(
+std::pair< std::vector<int>, std::vector<double> > ANNkd_tree::annkFRSearch2(
 	ANNpoint			q,				// the query point
 	ANNdist				sqRad,			// squared radius search bound
 	double				eps)			// the error bound
@@ -116,11 +117,12 @@ std::vector<int> ANNkd_tree::annkFRSearch2(
 	//ANNkdFRPointMK = new ANNmin_k(k);	// create set for closest k points
 
 	closest.clear();
+	dists.clear();
 
 	// search starting at the root
 	root->ann_FR_search(annBoxDistance(q, bnd_box_lo, bnd_box_hi, dim));
 
-	return closest;			// return final point count
+	return std::make_pair(closest, dists);			// return final point count
 
 }
 
@@ -208,12 +210,13 @@ void ANNkd_leaf::ann_FR_search(ANNdist box_dist)
 		}
 
 		if (d >= ANNkdFRDim &&					// among the k best?
-		   (ANN_ALLOW_SELF_MATCH || dist!=0)) { // and no self-match problem
+		   (ANN_ALLOW_SELF_MATCH || dist!=0.0)) { // and no self-match problem
 												// add it to the list
 			//ANNkdFRPointMK->insert(dist, bkt[i]);
 
 		  // MFH
 			closest.push_back(bkt[i]);
+			dists.push_back(dist);
 
 			ANNkdFRPtsInRange++;				// increment point count
 		}
