@@ -1,23 +1,25 @@
 Package: dbscan
-Version: 0.9-1
-Date: 2015-07-21
-Title: Density Based Clustering of Applications with Noise (DBSCAN)
+Version: 0.9-2
+Date: 2015-08-11
+Title: Density Based Clustering of Applications with Noise (DBSCAN) and
+        Related Algorithms
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
                 email = "mhahsler@lyle.smu.edu"),
 	    person("Sunil", "Arya", role = c("ctb", "cph")),
 	    person("David", "Mount", role = c("ctb", "cph")))
-Copyright: ANN library is copyright University of Maryland, Sunil Arya
-        and David Mount.
-Description: A fast reimplementation of the density-based DBSCAN clustering algorithm for spatial data introduced by Ester et al. 'A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise,' 1996. This implementation uses the kd-tree data structure (from library ANN) for faster k-nearest neighbor search. The implementation is many times faster than the R-based implementation in package fpc.
+Copyright: ANN library is copyright by University of Maryland, Sunil
+        Arya and David Mount. All other code is copyright by Michael
+        Hahsler.
+Description: A fast reimplementation of several density-based algorithms of the DBSCAN family for spatial data. Includes the DBSCAN (density-based spatial clustering of applications with noise) and OPTICS (ordering points to identify the clustering structure) clustering algorithms and the LOF (local outlier factor) algorithm. The implementations uses the kd-tree data structure (from library ANN) for faster k-nearest neighbor search. An R interface to fast kNN and fixed-radius NN search is also provided.
 Imports: Rcpp
 Suggests: fpc, microbenchmark
 License: GPL (>= 2)
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2015-07-22 14:48:10 UTC; hahsler
+Packaged: 2015-08-11 19:09:15 UTC; hahsler
 Author: Michael Hahsler [aut, cre, cph],
   Sunil Arya [ctb, cph],
   David Mount [ctb, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2015-07-23 06:58:07
+Date/Publication: 2015-08-12 00:35:38

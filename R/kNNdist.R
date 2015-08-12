@@ -1,8 +1,7 @@
-
 kNNdist <- function(x, k, search = "kdtree", bucketSize = 10,
   splitRule = "suggest", approx = 0) {
 
-  if(k >= nrow(x)-1L) stop("Not enought neighbors in data set!")
+  if(k >= nrow(x)) stop("Not enought neighbors in data set!")
 
   splitRule <- pmatch(toupper(splitRule),
     c("STD", "MIDPT", "FAIR", "MIDPT", "SL_FAIR", "SUGGEST"))-1L

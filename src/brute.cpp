@@ -109,12 +109,13 @@ int ANNbruteForce::annkFRSearch(		// approx fixed-radius kNN search
 }
 
 // MFH: version that returns all points
-std::vector<int> ANNbruteForce::annkFRSearch2(		// approx fixed-radius kNN search
+std::pair< std::vector<int>, std::vector<double> > ANNbruteForce::annkFRSearch2(		// approx fixed-radius kNN search
 	ANNpoint			q,				// query point
 	ANNdist				sqRad,			// squared radius
 	double				eps)			// error bound
 {
 	std::vector<int> points;
+	std::vector<double> dists;
 	int i;
 	int pts_in_range = 0;				// number of points in query range
 										// run every point through queue
@@ -124,9 +125,10 @@ std::vector<int> ANNbruteForce::annkFRSearch2(		// approx fixed-radius kNN searc
 		if (sqDist <= sqRad &&			// within radius bound
 			(ANN_ALLOW_SELF_MATCH || sqDist != 0)) { // ...and no self match
 			points.push_back(i);
+			dists.push_back(sqDist);
 			pts_in_range++;
 		}
 	}
 
-	return points;
+	return std::make_pair(points, dists);
 }

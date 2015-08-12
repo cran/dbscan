@@ -23,6 +23,22 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// frNN_int
+List frNN_int(NumericMatrix data, double eps, int type, int bucketSize, int splitRule, double approx);
+RcppExport SEXP dbscan_frNN_int(SEXP dataSEXP, SEXP epsSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type bucketSize(bucketSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
+    Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
+    __result = Rcpp::wrap(frNN_int(data, eps, type, bucketSize, splitRule, approx));
+    return __result;
+END_RCPP
+}
 // kNNdist_int
 NumericVector kNNdist_int(NumericMatrix data, int k, int type, int bucketSize, int splitRule, double approx);
 RcppExport SEXP dbscan_kNNdist_int(SEXP dataSEXP, SEXP kSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
@@ -36,6 +52,39 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
     Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
     __result = Rcpp::wrap(kNNdist_int(data, k, type, bucketSize, splitRule, approx));
+    return __result;
+END_RCPP
+}
+// kNN_int
+List kNN_int(NumericMatrix data, int k, int type, int bucketSize, int splitRule, double approx);
+RcppExport SEXP dbscan_kNN_int(SEXP dataSEXP, SEXP kSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type bucketSize(bucketSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
+    Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
+    __result = Rcpp::wrap(kNN_int(data, k, type, bucketSize, splitRule, approx));
+    return __result;
+END_RCPP
+}
+// optics_int
+List optics_int(NumericMatrix data, double eps, int minPts, int type, int bucketSize, int splitRule, double approx);
+RcppExport SEXP dbscan_optics_int(SEXP dataSEXP, SEXP epsSEXP, SEXP minPtsSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type minPts(minPtsSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type bucketSize(bucketSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
+    Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
+    __result = Rcpp::wrap(optics_int(data, eps, minPts, type, bucketSize, splitRule, approx));
     return __result;
 END_RCPP
 }

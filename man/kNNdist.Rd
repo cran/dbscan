@@ -28,18 +28,15 @@ kNNdistplot(x, k = 4, ...)
     a factor of 1+\code{approx} eps may be used. Some actual NN may be
     omitted leading to spurious clusters and noise points.
     However, the algorithm will enjoy a significant speedup. }
-  \item{...}{further arguments are passed on to \code{kNNdistplot}.}
+  \item{...}{further arguments are passed on to \code{kNNdist}.}
   }
-%\details{
-%%  ~~ If necessary, more details than the description above ~~
-%}
-%\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-%}
+\details{
+See \code{\link{kNN}} for a discusion of the kd-tree related parameters.
+}
+\value{
+\code{kNNdist} returns a numeric vector with the distance to its k nearest
+neighbor.
+}
 %\references{
 %% ~put references to the literature/web site here ~
 %}
@@ -50,11 +47,10 @@ kNNdistplot(x, k = 4, ...)
 %%  ~~further notes~~
 %}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\seealso{
+\code{\link{kNN}}.
+}% ~Make other sections like Warning with \section{Warning }{....} ~
 
-%\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-%}
 \examples{
 data(iris)
 iris <- as.matrix(iris[,1:4])
@@ -64,7 +60,7 @@ kNNdistplot(iris, k=4)
 ## the knee is around a distance of .5
 
 cl <- dbscan(iris, eps = .5, minPts = 4)
-pairs(iris, col = cl+1L)
+pairs(iris, col = cl$cluster+1L)
 ## Note: black are noise points
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

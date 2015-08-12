@@ -1,5 +1,6 @@
 //----------------------------------------------------------------------
-// File:                        kNNdist.cpp
+//                   Fixed Radius Nearest Neighbors
+// File:                        frNN.cpp
 //----------------------------------------------------------------------
 // Copyright (c) 2015 Michael Hahsler. All Rights Reserved.
 //
@@ -10,12 +11,15 @@
 
 #include <Rcpp.h>
 #include "ANN/ANN.h"
+#include "R_regionQuery.h"
 
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector kNNdist_int(NumericMatrix data, int k,
-  int type, int bucketSize, int splitRule, double approx) {
+List frNN_int(NumericMatrix data, double eps, int type, int bucketSize, int splitRule, double approx) {
+
+  // kd-tree uses squared distances
+  double eps2 = eps*eps;
 
   // copy data
   int nrow = data.nrow();
@@ -38,26 +42,33 @@ NumericVector kNNdist_int(NumericMatrix data, int k,
   }
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
 
-  // kNN distance (use k+1 since the search also returns the query point)
-  std::vector<double> d(nrow, 0);
-  ANNdistArray dists = new ANNdist[k+1];
-  ANNidxArray nnIdx = new ANNidx[k+1];
+  // frNN
+  std::vector< std::vector <int> > id; id.resize(nrow);
+  std::vector< std::vector <double> > dist; dist.resize(nrow);
 
-  for (int i=0; i<nrow; i++) {
-    ANNpoint queryPt = dataPts[i];
+  for (int p=0; p<nrow; p++) {
+    if (!(p % 100)) Rcpp::checkUserInterrupt();
 
-    if(type==1) kdTree->annkSearch(queryPt, k+1, nnIdx, dists, approx);
-    else kdTree->annkSearch(queryPt, k+1, nnIdx, dists);
+    //Rprintf("processing point %d\n", p+1);
+    nn N = regionQueryDist(p, dataPts, kdTree, eps2, approx);
 
-    d[i] = pow(*std::max_element(dists, dists+k), .5);
+    // fix index
+    std::transform(N.first.begin(), N.first.end(),
+      N.first.begin(), std::bind2nd( std::plus<int>(), 1 ) );
+
+    id[p] = N.first;
+    dist[p] = N.second;
   }
 
   // cleanup
   delete kdTree;
-  delete [] dists;
-  delete [] nnIdx;
   annDeallocPts(dataPts);
   annClose();
 
-  return wrap(d);
+  // prepare results
+  List ret;
+  ret["id"] = id;
+  ret["dist"] = dist;
+  ret["eps"] = eps;
+  return ret;
 }

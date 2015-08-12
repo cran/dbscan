@@ -4,7 +4,16 @@ importFrom(graphics, plot)
 importFrom(stats, dist)
 
 export(
-  dbscan,
+  kNN,
   kNNdistplot,
-  kNNdist
+  kNNdist,
+  frNN,
+  dbscan,
+  optics,
+  lof
 )
+
+S3method(print, optics)
+S3method(plot, optics)
+
+S3method(print, dbscan)
