@@ -17,18 +17,27 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
-  int borderPoints, int type, int bucketSize, int splitRule, double approx) {
+IntegerVector dbscan_int(
+    NumericMatrix data, double eps, int minPts, NumericVector weights,
+    int borderPoints, int type, int bucketSize, int splitRule, double approx) {
 
   // kd-tree uses squared distances
   double eps2 = eps*eps;
+  bool weighted = FALSE;
+  double Nweight = 0.0;
+
+  if (weights.size() != 0) {
+    if (weights.size() != data.nrow())
+      stop("length of weights vector is incompatible with data.");
+    weighted = TRUE;
+  }
 
   // copy data
   int nrow = data.nrow();
   int ncol = data.ncol();
   ANNpointArray dataPts = annAllocPts(nrow, ncol);
-  for(int i = 0; i < nrow; i++){
-    for(int j = 0; j < ncol; j++){
+  for (int i = 0; i < nrow; i++){
+    for (int j = 0; j < ncol; j++){
       (dataPts[i])[j] = data(i, j);
     }
   }
@@ -39,7 +48,7 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
   if (type==1){
     kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
       (ANNsplitRule)  splitRule);
-  } else{
+  } else {
     kdTree = new ANNbruteForce(dataPts, nrow, ncol);
   }
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
@@ -56,22 +65,40 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
 
     std::vector<int> N = regionQuery(i, dataPts, kdTree, eps2, approx);
     // Note: the neighborhood does not contain the point itself!
-    if(N.size()+1 < (size_t) minPts) continue; // noise points stay unassigned for now
+    // noise points stay unassigned for now
+    //if (weighted) Nweight = sum(weights[IntegerVector(N.begin(), N.end())]) +
+    if (weighted) {
+      // This should work, but Rcpp has a problem with the sugar expression!
+      // Assigning the subselection forces it to be materializes.
+      // Nweight = sum(weights[IntegerVector(N.begin(), N.end())]) +
+      // weights[i];
+      NumericVector w = weights[IntegerVector(N.begin(), N.end())];
+       Nweight = sum(w) + weights[i];
+    } else Nweight = N.size()+1;
+
+    if (Nweight < minPts) continue;
 
     // start new cluster and expand
     std::vector<int> cluster;
     cluster.push_back(i);
     visited[i] = true;
 
-    while(!N.empty()) {
+    while (!N.empty()) {
       int j = N.back();
       N.pop_back();
 
-      if(visited[j]) continue; // point already processed
+      if (visited[j]) continue; // point already processed
       visited[j] = true;
 
       std::vector<int> N2 = regionQuery(j, dataPts, kdTree, eps2, approx);
-      if(N2.size()+1 >= (size_t) minPts) { // expand neighborhood
+
+      if (weighted) {
+        // Nweight = sum(weights(NumericVector(N2.begin(), N2.end())) +
+        // weights[j]
+        NumericVector w = weights[IntegerVector(N2.begin(), N2.end())];
+        Nweight = sum(w) + weights[j];
+      } else Nweight = N2.size()+1;
+      if (Nweight >= minPts) { // expand neighborhood
         // this is faster than set_union and does not need sort! visited takes
         // care of duplicates.
         std::copy(N2.begin(), N2.end(),
@@ -79,7 +106,7 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
       }
 
       // for DBSCAN* (borderPoints==FASLE) border points are considered noise
-      if(N2.size() >= (size_t) minPts || borderPoints) cluster.push_back(j);
+      if(Nweight >= minPts || borderPoints) cluster.push_back(j);
     }
 
     // add cluster to list
@@ -89,8 +116,8 @@ IntegerVector dbscan_int(NumericMatrix data, double eps, int minPts,
   // prepare cluster vector
   // unassigned points are noise (cluster 0)
   IntegerVector id(nrow, 0);
-  for(std::size_t i=0; i<clusters.size(); i++) {
-    for(std::size_t j=0; j<clusters[i].size(); j++) {
+  for (std::size_t i=0; i<clusters.size(); i++) {
+    for (std::size_t j=0; j<clusters[i].size(); j++) {
       id[clusters[i][j]] = i+1;
     }
   }

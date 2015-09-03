@@ -1,4 +1,5 @@
-dbscan <- function(x, eps, minPts = 5, borderPoints = TRUE, search = "kdtree", bucketSize = 10,
+dbscan <- function(x, eps, minPts = 5, weights = NULL,
+  borderPoints = TRUE, search = "kdtree", bucketSize = 10,
   splitRule = "suggest", approx = 0) {
 
   splitRule <- pmatch(toupper(splitRule),
@@ -9,7 +10,7 @@ dbscan <- function(x, eps, minPts = 5, borderPoints = TRUE, search = "kdtree", b
   if(is.na(search)) stop("Unknown NN search type!")
 
   ret <- dbscan_int(as.matrix(x), as.double(eps), as.integer(minPts),
-    as.integer(borderPoints),
+    as.double(weights), as.integer(borderPoints),
     as.integer(search), as.integer(bucketSize),
     as.integer(splitRule), as.double(approx))
 
