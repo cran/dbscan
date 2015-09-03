@@ -1,6 +1,6 @@
 Package: dbscan
-Version: 0.9-2
-Date: 2015-08-11
+Version: 0.9-3
+Date: 2015-09-2
 Title: Density Based Clustering of Applications with Noise (DBSCAN) and
         Related Algorithms
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
@@ -16,10 +16,10 @@ Suggests: fpc, microbenchmark
 License: GPL (>= 2)
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2015-08-11 19:09:15 UTC; hahsler
+Packaged: 2015-09-03 12:44:19 UTC; hahsler
 Author: Michael Hahsler [aut, cre, cph],
   Sunil Arya [ctb, cph],
   David Mount [ctb, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2015-08-12 00:35:38
+Date/Publication: 2015-09-03 16:53:20
