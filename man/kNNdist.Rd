@@ -11,24 +11,14 @@ The plot can be used to help find a suitable value for the
 \code{eps} neighborhood for DBSCAN. Look for the knee in the plot.
 }
 \usage{
-kNNdist(x, k, search = "kdtree", bucketSize = 10, splitRule = "suggest",
-  approx = 0)
+kNNdist(x, k, ...)
 kNNdistplot(x, k = 4, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{ the data set as a matrix. }
   \item{k}{ number of nearest neighbors used (use minPoints). }
-  \item{search}{ nearest neighbor search strategy (one of "kdtree"
-    or "linear").}
-  \item{bucketSize}{ max size of the kd-tree leafs. }
-  \item{splitRule}{ rule to split the tree. One of "STD" (kd),
-    "MIDPT", "FAIR", "MIDPT", "SL_FAIR" or "SUGGEST". }
-  \item{approx}{ use approximate nearest neighbors. All NN up to a distance of
-    a factor of 1+\code{approx} eps may be used. Some actual NN may be
-    omitted leading to spurious clusters and noise points.
-    However, the algorithm will enjoy a significant speedup. }
-  \item{...}{further arguments are passed on to \code{kNNdist}.}
+  \item{...}{further arguments are passed on to \code{kNN}.}
   }
 \details{
 See \code{\link{kNN}} for a discusion of the kd-tree related parameters.

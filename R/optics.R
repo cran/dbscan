@@ -1,8 +1,31 @@
+#######################################################################
+# dbscan - Density Based Clustering of Applications with Noise
+#          and Related Algorithms
+# Copyright (C) 2015 Michael Hahsler
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 optics <- function(x, eps, minPts = 5, eps_cl, search = "kdtree", bucketSize = 10,
   splitRule = "suggest", approx = 0) {
 
-  splitRule <- pmatch(toupper(splitRule),
-    c("STD", "MIDPT", "FAIR", "MIDPT", "SL_FAIR", "SUGGEST"))-1L
+  ## make sure x is numeric
+  x <- as.matrix(x)
+  if(storage.mode(x) == "integer") storage.mode(x) <- "double"
+  if(storage.mode(x) != "double") stop("x has to be a numeric matrix.")
+
+  splitRule <- pmatch(toupper(splitRule), .ANNsplitRule)-1L
   if(is.na(splitRule)) stop("Unknown splitRule!")
 
   search <- pmatch(toupper(search), c("KDTREE", "LINEAR"))
