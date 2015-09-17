@@ -1,6 +1,6 @@
 Package: dbscan
-Version: 0.9-3
-Date: 2015-09-2
+Version: 0.9-4
+Date: 2015-09-17
 Title: Density Based Clustering of Applications with Noise (DBSCAN) and
         Related Algorithms
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
@@ -12,14 +12,14 @@ Copyright: ANN library is copyright by University of Maryland, Sunil
         Hahsler.
 Description: A fast reimplementation of several density-based algorithms of the DBSCAN family for spatial data. Includes the DBSCAN (density-based spatial clustering of applications with noise) and OPTICS (ordering points to identify the clustering structure) clustering algorithms and the LOF (local outlier factor) algorithm. The implementations uses the kd-tree data structure (from library ANN) for faster k-nearest neighbor search. An R interface to fast kNN and fixed-radius NN search is also provided.
 Imports: Rcpp
-Suggests: fpc, microbenchmark
+Suggests: fpc, microbenchmark, testthat
 License: GPL (>= 2)
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2015-09-03 12:44:19 UTC; hahsler
+Packaged: 2015-09-17 17:30:10 UTC; hahsler
 Author: Michael Hahsler [aut, cre, cph],
   Sunil Arya [ctb, cph],
   David Mount [ctb, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2015-09-03 16:53:20
+Date/Publication: 2015-09-17 22:50:03

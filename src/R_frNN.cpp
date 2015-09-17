@@ -43,8 +43,8 @@ List frNN_int(NumericMatrix data, double eps, int type, int bucketSize, int spli
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
 
   // frNN
-  std::vector< std::vector <int> > id; id.resize(nrow);
-  std::vector< std::vector <double> > dist; dist.resize(nrow);
+  std::vector< IntegerVector > id; id.resize(nrow);
+  std::vector< NumericVector > dist; dist.resize(nrow);
 
   for (int p=0; p<nrow; p++) {
     if (!(p % 100)) Rcpp::checkUserInterrupt();
@@ -53,11 +53,25 @@ List frNN_int(NumericMatrix data, double eps, int type, int bucketSize, int spli
     nn N = regionQueryDist(p, dataPts, kdTree, eps2, approx);
 
     // fix index
-    std::transform(N.first.begin(), N.first.end(),
-      N.first.begin(), std::bind2nd( std::plus<int>(), 1 ) );
+    //std::transform(N.first.begin(), N.first.end(),
+    //  N.first.begin(), std::bind2nd( std::plus<int>(), 1 ) );
 
-    id[p] = N.first;
-    dist[p] = N.second;
+    // take sqrt of distance since the tree stores d^2
+    //std::transform(N.second.begin(), N.second.end(),
+    //  N.second.begin(), static_cast<double (*)(double)>(std::sqrt));
+
+    // remove self matches
+    IntegerVector ids = IntegerVector(N.first.begin(), N.first.end());
+    LogicalVector take = ids != p;
+    ids = ids[take];
+    NumericVector dists = NumericVector(N.second.begin(), N.second.end())[take];
+
+    id[p] = ids+1;
+    dist[p] = sqrt(dists);
+
+
+
+
   }
 
   // cleanup

@@ -31,9 +31,9 @@
   \item{search}{ nearest neighbor search strategy (one of "kdtree"
     or "linear").}
   \item{bucketSize}{ max size of the kd-tree leafs. }
-  \item{splitRule}{ rule to split the tree. One of "STD" (kd),
-    "MIDPT", "FAIR", "MIDPT", "SL_FAIR" or "SUGGEST". "SUGGEST" uses ANNs best
-    guess.}
+  \item{splitRule}{ rule to split the kd-tree. One of "STD",
+    "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST"
+    (SL stands for sliding). "SUGGEST" uses ANNs best guess.}
   \item{approx}{ relative error bound for approximate nearest neighbor searching.}
 }
 \details{
@@ -97,7 +97,7 @@ kNNdistplot(iris, k = 4)
 
 ## example data from fpc
 set.seed(665544)
-n <- 600
+n <- 100
 x <- cbind(
   x = runif(10, 0, 10) + rnorm(n, sd = 0.2),
   y = runif(10, 0, 10) + rnorm(n, sd = 0.2)
@@ -116,6 +116,8 @@ if (requireNamespace("microbenchmark", quietly = TRUE)) {
     dbscan::dbscan(x, .2, 4, search = "linear"), times = 10, unit = "ms")
   t_fpc <- microbenchmark::microbenchmark(
     fpc::dbscan(x, .2, 4), times = 10, unit = "ms")
+
+  rbind(t_fpc, t_dbscan_linear, t_dbscan)
 
   boxplot(rbind(t_fpc, t_dbscan_linear, t_dbscan),
     names = c("fpc (R)", "dbscan (linear)", "dbscan (kdtree)"),

@@ -25,9 +25,9 @@
   \item{search}{ nearest neighbor search strategy (one of "kdtree"
     or "linear").}
   \item{bucketSize}{ max size of the kd-tree leafs. }
-  \item{splitRule}{ rule to split the tree. One of "STD" (kd),
-    "MIDPT", "FAIR", "MIDPT", "SL_FAIR" or "SUGGEST". "SUGGEST" uses ANNs best
-    guess.}
+  \item{splitRule}{ rule to split the kd-tree. One of "STD",
+      "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST" 
+      (SL stands for sliding). "SUGGEST" uses ANNs best guess.}
   \item{approx}{ relative error bound for approximate nearest neighbor searching.}
 }
 \details{

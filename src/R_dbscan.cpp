@@ -45,12 +45,9 @@ IntegerVector dbscan_int(
 
   // create kd-tree (1) or linear search structure (2)
   ANNpointSet* kdTree = NULL;
-  if (type==1){
-    kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
-      (ANNsplitRule)  splitRule);
-  } else {
-    kdTree = new ANNbruteForce(dataPts, nrow, ncol);
-  }
+  if (type==1)kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
+    (ANNsplitRule) splitRule);
+  else kdTree = new ANNbruteForce(dataPts, nrow, ncol);
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
 
   // DBSCAN
@@ -63,18 +60,19 @@ IntegerVector dbscan_int(
 
     if (visited[i]) continue;
 
+
     std::vector<int> N = regionQuery(i, dataPts, kdTree, eps2, approx);
-    // Note: the neighborhood does not contain the point itself!
+
     // noise points stay unassigned for now
     //if (weighted) Nweight = sum(weights[IntegerVector(N.begin(), N.end())]) +
     if (weighted) {
       // This should work, but Rcpp has a problem with the sugar expression!
-      // Assigning the subselection forces it to be materializes.
+      // Assigning the subselection forces it to be materialized.
       // Nweight = sum(weights[IntegerVector(N.begin(), N.end())]) +
       // weights[i];
       NumericVector w = weights[IntegerVector(N.begin(), N.end())];
-       Nweight = sum(w) + weights[i];
-    } else Nweight = N.size()+1;
+      Nweight = sum(w);
+    } else Nweight = N.size();
 
     if (Nweight < minPts) continue;
 
@@ -96,8 +94,9 @@ IntegerVector dbscan_int(
         // Nweight = sum(weights(NumericVector(N2.begin(), N2.end())) +
         // weights[j]
         NumericVector w = weights[IntegerVector(N2.begin(), N2.end())];
-        Nweight = sum(w) + weights[j];
-      } else Nweight = N2.size()+1;
+        Nweight = sum(w);
+      } else Nweight = N2.size();
+
       if (Nweight >= minPts) { // expand neighborhood
         // this is faster than set_union and does not need sort! visited takes
         // care of duplicates.
@@ -105,7 +104,7 @@ IntegerVector dbscan_int(
           std::back_inserter(N));
       }
 
-      // for DBSCAN* (borderPoints==FASLE) border points are considered noise
+      // for DBSCAN* (borderPoints==FALSE) border points are considered noise
       if(Nweight >= minPts || borderPoints) cluster.push_back(j);
     }
 

@@ -9,10 +9,6 @@ frNN_int <- function(data, eps, type, bucketSize, splitRule, approx) {
     .Call('dbscan_frNN_int', PACKAGE = 'dbscan', data, eps, type, bucketSize, splitRule, approx)
 }
 
-kNNdist_int <- function(data, k, type, bucketSize, splitRule, approx) {
-    .Call('dbscan_kNNdist_int', PACKAGE = 'dbscan', data, k, type, bucketSize, splitRule, approx)
-}
-
 kNN_int <- function(data, k, type, bucketSize, splitRule, approx) {
     .Call('dbscan_kNN_int', PACKAGE = 'dbscan', data, k, type, bucketSize, splitRule, approx)
 }
