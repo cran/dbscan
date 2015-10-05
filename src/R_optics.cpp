@@ -41,17 +41,15 @@ void update(
     N.first.pop_back();
     N.second.pop_back();
 
+    if(visited[o]) continue;
+
     double newreachdist = std::max(coredist[p], o_d);
 
-    if(visited[o]) {
-      // Update reachability distance for already processed points? No
-      //if(newreachdist < reachdist[o]) reachdist[o] = newreachdist;
-      continue;
-    }
-
     pos_seeds = std::find(seeds.begin(), seeds.end(), o);
-    if(pos_seeds == seeds.end()) seeds.push_back(o);
-    else if(newreachdist < reachdist[o]) reachdist[o] = newreachdist;
+    if(pos_seeds == seeds.end()) {
+      reachdist[o] = newreachdist;
+      seeds.push_back(o);
+    } else if(newreachdist < reachdist[o]) reachdist[o] = newreachdist;
   }
 }
 
@@ -87,10 +85,11 @@ List optics_int(NumericMatrix data, double eps, int minPts,
   // OPTICS
   std::vector<bool> visited(nrow, false);
   std::vector<int> orderedPoints; orderedPoints.reserve(nrow);
-  std::vector<double> reachdist(nrow, INFINITY);
+  std::vector<double> reachdist(nrow, INFINITY); // we used Inf as undefined
   std::vector<double> coredist(nrow, INFINITY);
   nn N, N2;
   std::vector<int> seeds;
+  std::vector<double> ds;
 
   for (int p=0; p<nrow; p++) {
     if (!(p % 100)) Rcpp::checkUserInterrupt();
@@ -98,11 +97,12 @@ List optics_int(NumericMatrix data, double eps, int minPts,
 
     if (visited[p]) continue;
 
+    // ExpandClusterOrder
     N = regionQueryDist(p, dataPts, kdTree, eps2, approx);
 
     // find core distance
     if(N.second.size() >= (size_t) minPts) {
-      std::vector<double> ds = N.second;
+      ds = N.second;
       std::sort(ds.begin(), ds.end()); // sort inceasing
       coredist[p] = ds[minPts-1];
     }
@@ -113,30 +113,38 @@ List optics_int(NumericMatrix data, double eps, int minPts,
 
     if (coredist[p] == INFINITY) continue; // core-dist is undefined
 
-    // updateable priority queue does not exist in C++ STL!
+    // updateable priority queue does not exist in C++ STL so we use a vector!
     seeds.clear();
 
     // update
-    update(N, p, seeds, eps2, minPts, visited, orderedPoints, reachdist, coredist);
+    update(N, p, seeds, eps2, minPts, visited, orderedPoints,
+      reachdist, coredist);
 
     while (!seeds.empty()) {
-      // find smallest dist
+      // get smallest dist (to emulate priority queue)
       std::vector<int>::iterator q_it = seeds.begin();
-      for (std::vector<int>::iterator it = seeds.begin(); it!=seeds.end(); ++it) {
+      for (std::vector<int>::iterator it = seeds.begin();
+        it!=seeds.end(); ++it) {
         if (reachdist[*it] < reachdist[*q_it]) q_it = it;
       }
-
       int q = *q_it;
       seeds.erase(q_it);
 
-      visited[q] = true;
-      orderedPoints.push_back(q);
-
       N2 = regionQueryDist(q, dataPts, kdTree, eps2, approx);
+
+      visited[q] = true;
+
+      // find core distance
+      ds = N2.second;
+      std::sort(ds.begin(), ds.end());
+      coredist[q] = ds[minPts-1];
+
+      orderedPoints.push_back(q);
 
       // contains q?
       if(N2.first.size() < (size_t) minPts-1) continue; // q has no core dist.
-      update(N2, q, seeds, eps2, minPts, visited, orderedPoints, reachdist, coredist);
+      update(N2, q, seeds, eps2, minPts, visited, orderedPoints,
+        reachdist, coredist);
     }
   }
 
