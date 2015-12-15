@@ -16,7 +16,7 @@ kNNdistplot(x, k = 4, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ the data set as a matrix. }
+  \item{x}{ the data set as a matrix or a dist object. }
   \item{k}{ number of nearest neighbors used (use minPoints). }
   \item{...}{further arguments are passed on to \code{kNN}.}
   }
@@ -27,15 +27,10 @@ See \code{\link{kNN}} for a discusion of the kd-tree related parameters.
 \code{kNNdist} returns a numeric vector with the distance to its k nearest
 neighbor.
 }
-%\references{
-%% ~put references to the literature/web site here ~
-%}
-%\author{
-%%  ~~who you are~~
-%}
-%\note{
-%%  ~~further notes~~
-%}
+
+\author{
+    Michael Hahsler
+}
 
 \seealso{
 \code{\link{kNN}}.

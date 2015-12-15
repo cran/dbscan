@@ -16,19 +16,18 @@
     search = "kdtree", bucketSize = 10,
     splitRule = "suggest", approx = 0)
 
-  optics_cut(x, eps)
+  optics_cut(x, eps_cl)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{a data matrix.}
-  \item{eps}{ upper limit of the size of the epsilon neighborhood.
-    For \code{optics_cut} it specifies the height at which the
-    reachability plot is cut into clusters. }
+  \item{x}{a data matrix or a distance matrix.}
+  \item{eps}{ upper limit of the size of the epsilon neighborhood.}
   \item{minPts}{ number of minimum points in the eps region (for core points).
       Default is 5 points.}
   \item{eps_cl}{ Threshold to identify clusters (eps_cl <= eps).}
-  \item{search}{ nearest neighbor search strategy (one of "kdtree"
-    or "linear").}
+  \item{search}{ nearest neighbor search strategy (one of "kdtree",
+    "linear" search, or precomputed "dist") Using precomputed distances
+    is better for high-dimensional, but smaller data sets.}
   \item{bucketSize}{ max size of the kd-tree leafs. }
   \item{splitRule}{ rule to split the kd-tree. One of "STD",
       "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST"
@@ -39,7 +38,7 @@
 This implementation of OPTICS implements the original algorithm as described by
 Ankers et al (1999). OPTICS is similar to DBSCAN, however, for OPTICS
 \code{eps} is only an upper limit for the neighborhood size used to reduce
-computational complexity.
+computational complexity. Similar to DBSCAN, \code{minPts} is often set to be dimensionality of the data plus one.
 
 OPTICS linearly orders the data points such that points which are spatially closest become neighbors in the ordering. The closest analog to this ordering is dendrogram
 in single-link hierarchical clustering. The algorithm also calculates the
@@ -48,41 +47,42 @@ which shows each points reachability distance where the points are sorted
 by OPTICS. Valleys represent clusters (the deeper the valley, the more dense
   the cluster) and high points indicate points between clusters.
 
-If \code{epc_cl} is specified, then an algorithm to extract clusters
-(see Ankers et al, 1999) is used.
+If \code{eps_cl} is specified, then an algorithm to extract clusters
+(see Ankers et al, 1999) is used. That is, it internally calls \code{optics_cut}
+to extract the clustering.
+The resulting clustering is similar to what DBSCAN would
+produce. The only difference is that OPTICS is not able to assign some border
+points and reports them instead as noise.
 
 See \code{\link{kNN}} for more information on the other parameters related to
-kNN search.
+nearest neighbor search.
 }
 \value{
   An object of class 'optics' with components:
     \item{eps }{ value of eps parameter. }
     \item{minPts }{ value of minPts parameter. }
-    \item{order }{ order for points. }
-    \item{reachdist }{ reachability distance for each point. }
-    \item{coredist }{ core distance for each point. }
+    \item{order }{ optics order for the data points in \code{x}. }
+    \item{reachdist }{ reachability distance for each data point in \code{x}. }
+    \item{coredist }{ core distance for each data point in \code{x}. }
 
-  If \code{eps_cl} was specified the following additional components are
-    available:
-    \item{eps_cl }{ reachability distance for each point. }
-    \item{cluster }{ assigned cluster labels in the order of the rows in
+  If \code{eps_cl} was specified or \code{optics_cut} was called, then in
+      addition the following components are available:
+    \item{eps_cl }{ reachability distance for each point in \code{x}. }
+    \item{cluster }{ assigned cluster labels in the order of the data points in
       \code{x}. }
 }
 \references{
 Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Joerg Sander (1999). OPTICS: Ordering Points To Identify the Clustering Structure. ACM SIGMOD international conference on Management of data. ACM Press. pp. 49--60.
 }
-%\author{
-  %%  ~~who you are~~
-    %}
-%\note{
-  %%  ~~further notes~~
-    %}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\author{
+    Michael Hahsler
+}
 
 \seealso{
 \code{\link[fpc]{dbscan}} in \pkg{fpc}.
 }
+
 \examples{
 set.seed(2)
 n <- 400
@@ -105,18 +105,23 @@ res$order
 plot(res)
 
 ### identify clusters by cutting the reachability plot (black is noise)
-res <- optics_cut(res, eps = .07)
+res <- optics_cut(res, eps_cl = .065)
 res
 
 plot(res)
-plot(x, col = res$cluster+1)
+plot(x, col = res$cluster+1L)
 
 ### re-cutting at a higher eps threshold
-res <- optics_cut(res, eps = .1)
+res <- optics_cut(res, eps_cl = .1)
+res
+plot(res)
+plot(x, col = res$cluster+1L)
+
+### using OPTICS on a precomputed distance matrix
+d <- dist(x)
+res <- optics(x, eps = 1, minPts = 10)
 plot(res)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{ model }
 \keyword{ clustering }
 

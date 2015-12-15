@@ -12,7 +12,7 @@ lof(x, k = 4, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ a data matrix. }
+  \item{x}{ a data matrix or a dist object. }
   \item{k}{ size if neighborhood. }
   \item{\dots}{ further arguments are passed on to \code{kNN}. }
 }
@@ -33,9 +33,11 @@ Breunig, M., Kriegel, H., Ng, R., and Sander, J. (2000). LOF: identifying
    density-based local outliers. In \emph{ACM Int. Conf. on Management of Data,}
    pages 93-104.
 }
-%\author{
-%%  ~~who you are~~
-%}
+
+\author{
+    Michael Hahsler
+}
+
 \seealso{
 \code{\link{kNN}}.
 }

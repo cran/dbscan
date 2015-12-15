@@ -13,14 +13,14 @@ frNN(x, eps, sort = TRUE, search = "kdtree", bucketSize = 10,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ a data matrix.}
+  \item{x}{ a data matrix or a dist object.}
   \item{eps}{ neighbors radius. }
     \item{search}{ nearest neighbor search strategy (one of "kdtree"
-    or "linear").}
+    or "linear", "dist").}
   \item{sort}{ sort the neighbors by distance? }
   \item{bucketSize}{ max size of the kd-tree leafs. }
   \item{splitRule}{ rule to split the kd-tree. One of "STD",
-      "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST" 
+      "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST"
       (SL stands for sliding). "SUGGEST" uses ANNs best guess.}
   \item{approx}{ use approximate nearest neighbors. All NN up to a distance of
     a factor of 1+\code{approx} eps may be used. Some actual NN may be
@@ -29,6 +29,8 @@ frNN(x, eps, sort = TRUE, search = "kdtree", bucketSize = 10,
 }
 \details{
 For details on the parameters see \code{\link{kNN}}.
+
+Note: self-matches are not returned!
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
@@ -45,10 +47,10 @@ A list with the following components:
 \references{
 David M. Mount and Sunil Arya (2010). ANN: A Library for Approximate Nearest Neighbor Searching, \url{https://www.cs.umd.edu/~mount/ANN/}.
 }
-%\author{
-%%  ~~who you are~~
-%}
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+
+\author{
+    Michael Hahsler
+}
 
 \examples{
 data(iris)
