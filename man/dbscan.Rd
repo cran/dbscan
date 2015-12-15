@@ -19,17 +19,18 @@
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{a data matrix.}
+  \item{x}{a data matrix or a dist object.}
   \item{eps}{ size of the epsilon neighborhood.}
   \item{minPts}{ number of minimum points in the eps region (for core points).
       Default is 5 points.}
-  \item{weights}{ numeric; weights for the data points to perform weighted
-    clustering. }
-  \item{borderPoints}{ logical; should border points be assigned. If
+  \item{weights}{ numeric; weights for the data points. Only needed to perform
+    weighted clustering. }
+  \item{borderPoints}{ logical; should border points be assigned. The default
+    is \code{TRUE} for regular DBSCAN. If
     \code{FALSE} then border points are considered noise
     (see DBSCAN* in Campello et al, 2013).}
   \item{search}{ nearest neighbor search strategy (one of "kdtree"
-    or "linear").}
+    or "linear", "dist").}
   \item{bucketSize}{ max size of the kd-tree leafs. }
   \item{splitRule}{ rule to split the kd-tree. One of "STD",
     "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR" or "SUGGEST"
@@ -38,12 +39,18 @@
 }
 \details{
 This implementation of DBSCAN implements the original algorithm as described by
-Ester et al (1996). DBSCAN estimates the density around each data point by counting the number of points in a user-specified eps-neighborhood and applies a used-specified minPts thresholds to identify core, border and noise points. In a second step, core points are joined into a cluster if they are density-reachable (i.e., there is a chain of core points where one falls inside the eps-neighborhood of the next). Finally, border points are assigned to clusters.
+Ester et al (1996). DBSCAN estimates the density around each data point by counting the number of points in a user-specified eps-neighborhood and applies a used-specified minPts thresholds to identify core, border and noise points. In a second step, core points are joined into a cluster if they are density-reachable (i.e., there is a chain of core points where one falls inside the eps-neighborhood of the next). Finally, border points are assigned to clusters. The algorithm only needs
+parameters \code{eps} and \code{minPts}.
 
 Border points are arbitrarily assigned to clusters in the original algorithm.
 DBSCAN* (see Campello et al 2013) treats all border points as noise points. This is implemented with \code{borderPoints = FALSE}.
 
-\code{\link{kNNdistplot}} can be used to find suitable values for \code{eps}.
+Setting parameters for DBSCAN:
+\code{minPts} is often set to be dimensionality of the data plus one.
+The knee in \code{\link{kNNdistplot}} can be used to find suitable values for \code{eps}.
+
+See \code{\link{kNN}} for more information on the other parameters related to
+nearest neighbor search.
 }
 \value{
   A object of class 'dbscan' with the following components:
@@ -60,19 +67,16 @@ Based on Hierarchical Density Estimates. \emph{Proceedings of the 17th
 Pacific-Asia Conference on Knowledge Discovery
 in Databases, PAKDD 2013,} Lecture Notes in Computer Science 7819, p. 160.
 }
-%\author{
-  %%  ~~who you are~~
-    %}
-%\note{
-  %%  ~~further notes~~
-    %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 \code{\link{kNNdistplot}},
 \code{\link[fpc]{dbscan}} in \pkg{fpc}.
 }
+
+\author{
+    Michael Hahsler
+}
+
 \examples{
 data(iris)
 iris <- as.matrix(iris[,1:4])
