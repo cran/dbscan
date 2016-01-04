@@ -21,6 +21,6 @@ kNNdist <- function(x, k, ...) dbscan::kNN(x, k, sort = TRUE, ...)$dist
 
 kNNdistplot <- function(x, k = 4, ...) {
   kNNdist <- sort(kNNdist(x, k ,...))
-  plot(sort(kNNdist), type="l", ylab=paste(k, "-NN distance", sep=""),
+  plot(kNNdist, type="l", ylab=paste(k, "-NN distance", sep=""),
     xlab = "Pointes (sample) sorted by distance")
 }
