@@ -2,10 +2,11 @@ useDynLib("dbscan")
 
 import("Rcpp")
 
-importFrom("graphics", "plot", "par", "segments", "lines", "polygon")
+importFrom("graphics", "plot", "par", "segments", "lines", "polygon", "text")
 importFrom("grDevices", "palette", "chull", "adjustcolor")
 
-importFrom("stats", "dist")
+importFrom("stats", "dist", "hclust", "dendrapply", "as.dendrogram",
+  "is.leaf", "prcomp")
 
 importFrom("methods", "is")
 
@@ -16,15 +17,28 @@ export(
   frNN,
   dbscan,
   optics,
-  optics_cut,
-  opticsXi,
+  extractDBSCAN,
+  extractXi,
+  jpclust,
   lof,
-  hullplot
+  hullplot,
+  as.reachability
 )
 
 S3method(print, optics)
 S3method(plot, optics)
 S3method(predict, optics)
+S3method(as.dendrogram, optics)
+S3method(as.reachability, optics)
+
+S3method(as.reachability, dendrogram)
+
+S3method(print, reachability)
+S3method(plot, reachability)
+S3method(as.dendrogram, reachability)
 
 S3method(print, dbscan_fast)
 S3method(predict, dbscan_fast)
+
+S3method(print, kNN)
+S3method(print, frNN)

@@ -17,14 +17,29 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-optics <- function(x, eps, minPts = 5, eps_cl, xi, search = "kdtree",
-  bucketSize = 10, splitRule = "suggest", approx = 0) {
+optics <- function(x, eps, minPts = 5, ...) {
 
+  ### extra contains settings for frNN
+  ### search = "kdtree", bucketSize = 10, splitRule = "suggest", approx = 0
+  extra <- list(...)
+  args <- c("search", "bucketSize", "splitRule", "approx")
+  m <- pmatch(names(extra), args)
+  if(any(is.na(m))) stop("Unknown parameter: ",
+    paste(names(extra)[is.na(m)], collapse = ", "))
+  names(extra) <- args[m]
+
+  search <- if(is.null(extra$search)) "kdtree" else extra$search
+  search <- pmatch(toupper(search), c("KDTREE", "LINEAR", "DIST"))
+  if(is.na(search)) stop("Unknown NN search type!")
+
+  bucketSize <- if(is.null(extra$bucketSize)) 10L else
+    as.integer(extra$bucketSize)
+
+  splitRule <- if(is.null(extra$splitRule)) "suggest" else extra$splitRule
   splitRule <- pmatch(toupper(splitRule), .ANNsplitRule)-1L
   if(is.na(splitRule)) stop("Unknown splitRule!")
 
-  search <- pmatch(toupper(search), c("KDTREE", "LINEAR", "DIST"))
-  if(is.na(search)) stop("Unknown NN search type!")
+  approx <- if(is.null(extra$approx)) 0L else as.integer(extra$approx)
 
   ### dist search
   if(search == 3) {
@@ -36,7 +51,7 @@ optics <- function(x, eps, minPts = 5, eps_cl, xi, search = "kdtree",
   ## for dist we provide the R code with a frNN list and no x
   frNN <- list()
   if(is(x, "dist")) {
-    frNN <- frNN(x, eps)
+    frNN <- frNN(x, eps, ...)
     ## add self match and use C numbering
     frNN$id <- lapply(1:length(frNN$id),
       FUN = function(i) c(i-1L, frNN$id[[i]]-1L))
@@ -66,106 +81,84 @@ optics <- function(x, eps, minPts = 5, eps_cl, xi, search = "kdtree",
   ret$xi <- NA
   class(ret) <- "optics"
 
-  ### find clusters
-  if(!missing(eps_cl)) ret <- optics_cut(ret, eps_cl)
-  if(!missing(xi)) ret <- opticsXi(ret, xi)
-
   ret
 }
 
-### extract clusters
-optics_cut <- function(x, eps_cl) {
-  reachdist <- x$reachdist[x$order]
-  coredist <- x$coredist[x$order]
-  n <- length(x$order)
-  cluster <- integer(n)
 
-  clusterid <- 0L         ### 0 is noise
-  for(i in 1:n) {
-    if(reachdist[i] > eps_cl) {
-      if(coredist[i] <= eps_cl) {
-        clusterid <- clusterid + 1L
-        cluster[i] <- clusterid
-      }else{
-        cluster[i] <- 0L  ### noise
-      }
-    }else{
-      cluster[i] <- clusterid
-    }
-  }
-
-  x$eps_cl <- eps_cl
-  ### fix the order so cluster is in the same order as the rows in x
-  cluster[x$order] <- cluster
-  x$cluster <- cluster
-
-  x
-}
 
 print.optics <- function(x, ...) {
-  cat("OPTICS clustering for ", length(x$order), " objects.", "\n", sep = "")
-  cat("Parameters: ", "minPts = ", x$minPts,
-    ", eps = ", x$eps,
-    ", eps_cl = ", x$eps_cl,
-    ", xi = ", x$xi,
-    "\n", sep = "")
+  writeLines(c(
+    paste0("OPTICS ordering/clustering for ", length(x$order), " objects."),
+    paste0("Parameters: ",
+      "minPts = ", x$minPts,
+      ", eps = ", x$eps,
+      ", eps_cl = ", x$eps_cl,
+      ", xi = ", x$xi)
+  ))
+
   if(!is.null(x$cluster)) {
     cl <- unique(x$cluster)
     cl <- length(cl[cl!=0L])
+
     if(is.na(x$xi)) {
-      cat("The clustering contains ", cl, " cluster(s) and ",
-          sum(x$cluster==0L), " noise points.",
-          "\n", sep = "")
+      writeLines(paste0("The clustering contains ", cl, " cluster(s) and ",
+          sum(x$cluster==0L), " noise points."))
+
       print(table(x$cluster))
     } else {
-      cat("The clustering contains ", nrow(x$clusters_xi), " cluster(s) and ",
-          sum(x$cluster==0L), " noise points.",
-          "\n", sep = "")
+      writeLines(paste0("The clustering contains ", nrow(x$clusters_xi),
+        " cluster(s) and ", sum(x$cluster==0L), " noise points."))
     }
     cat("\n")
   }
-  cat("Available fields: ", paste(names(x), collapse = ", "), "\n", sep = "")
+
+  writeLines(strwrap(paste0("Available fields: ",
+    paste(names(x), collapse = ", ")), exdent = 18))
 }
 
-plot.optics <- function(x, y=NULL, cluster = TRUE, ...) {
-    if(!is.null(x$cluster) && cluster) {
-      if(is.null(x$clusters_xi)) {
-        plot(x$reachdist[x$order], type="h", col=x$cluster[x$order]+1L,
-          ylab = "Reachability dist.", xlab = "OPTICS order",
-          main = "Reachability Plot", ...)
-      } else {
-        y_max <- max(x$reachdist[which(x$reachdist != Inf)])
-        # Sort clusters by size
-        hclusters <- x$clusters_xi[order(x$clusters_xi$end-x$clusters_xi$start),]
+plot.optics <- function(x, cluster = TRUE, predecessor = FALSE, ...) {
+  # OPTICS cluster extraction methods
+  if (is(x$cluster, "xics") || all(c("start", "end", "cluster_id") %in% names(x$clusters_xi))) {
 
-        def.par <- par(no.readonly = TRUE)
+    # Sort clusters by size
+    hclusters <- x$clusters_xi[order(x$clusters_xi$end - x$clusters_xi$start),]
 
-        # .1 means to leave 15% for the cluster lines
-        par(mar= c(2, 4, 4, 2) + 0.1, omd = c(0, 1, .15, 1))
-        y_increments <- (y_max/0.85*.15)/(nrow(hclusters)+1L)
+    # .1 means to leave 15% for the cluster lines
+    def.par <- par(no.readonly = TRUE)
+    par(mar= c(2, 4, 4, 2) + 0.1, omd = c(0, 1, .15, 1))
 
-        plot(x$reachdist[x$order], type="h", col=x$cluster[x$order]+1L,
-             ylab = "Reachability dist.", xlab = NA, xaxt = "n",
-             main = "Reachability Plot", yaxs="i", ylim=c(0,y_max), xaxt='n', ...)
+    # Need to know how to spread out lines
+    y_max <- max(x$reachdist[which(x$reachdist != Inf)])
+    y_increments <- (y_max/0.85*.15)/(nrow(hclusters)+1L)
 
-        i <- 1:nrow(hclusters)
-        segments(x0=hclusters$start[i], y0=-(y_increments*i),
-          x1=hclusters$end[i], col=hclusters$cluster_id[i]+1L, lwd=2, xpd=NA)
-        par(def.par)
+    # Get top level cluster labels
+    # top_level <- extractClusterLabels(x$clusters_xi, x$order)
+    plot(as.reachability(x),  col=x$cluster[x$order]+1L,
+         xlab = NA, xaxt='n',
+         yaxs="i", ylim=c(0,y_max), ...)
 
-        }
-    }else{
-      plot(x$reachdist[x$order], type="h",
-        ylab = "Reachability dist.", xlab = "OPTICS order",
-        main = "Reachability Plot", ...)
-    }
+    # Lines beneath plotting region indicating Xi clusters
+    i <- 1:nrow(hclusters)
+    segments(x0=hclusters$start[i], y0=-(y_increments*i),
+             x1=hclusters$end[i], col=hclusters$cluster_id[i]+1L, lwd=2, xpd=NA)
+    ## Restore previous settings
+    par(def.par)
+  } else if (is.numeric(x$cluster) && !is.null(x$eps_cl)) { # Works for integers too
+    ## extractDBSCAN clustering
+    plot(as.reachability(x), col=x$cluster[x$order]+1L, ...)
+    lines(x = c(0, length(x$cluster)), y = c(x$eps_cl, x$eps_cl), col="black", lty=2)
+  } else {
+    # Regular reachability plot
+    plot(as.reachability(x), ...)
+  }
 }
 
-predict.optics <- function (object, data, newdata = NULL, ...) {
+predict.optics <- function (object, newdata = NULL, data, ...) {
   if (is.null(newdata)) return(object$cluster)
+  if (is.null(object$cluster)) stop("no extracted clustering available in object! run extractDBSCAN or extractXi first.")
 
   nn <- frNN(rbind(data, newdata), eps = object$eps_cl,
-    sort = TRUE)$id[-(1:nrow(data))]
+    sort = TRUE, ...)$id[-(1:nrow(data))]
   sapply(nn, function(x) {
     x <- x[x<=nrow(data)]
     x <- object$cluster[x][x>0][1]
@@ -173,3 +166,16 @@ predict.optics <- function (object, data, newdata = NULL, ...) {
     x
   })
 }
+
+# Simple conversion between OPTICS objects and reachability objects
+as.reachability.optics <- function(object, ...) {
+  structure(list(reachdist=object$reachdist, order=object$order), class="reachability")
+}
+
+# Conversion between OPTICS objects and dendrograms
+as.dendrogram.optics <- function(object, ...) {
+  if(object$minPts > length(object$order)) { stop("'minPts' should be less or equal to the points in the dataset.") }
+  if(length(which(object$reachdist == Inf)) > 1) stop("Eps value is not large enough to capture the complete hiearchical structure of the dataset. Please use a large eps value (such as Inf).")
+  as.dendrogram(as.reachability(object))
+}
+

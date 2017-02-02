@@ -54,7 +54,7 @@ kNN <- function(x, k, sort = TRUE, search = "kdtree", bucketSize = 10,
     d <- t(sapply(1:nrow(id), FUN = function(i) x[i, id[i,]]))
     dimnames(d) <- list(rownames(x), 1:k)
 
-    return(list(dist = d, id = id, k = k))
+    return(structure(list(dist = d, id = id, k = k), class = "kNN"))
   }
 
   ## make sure x is numeric
@@ -77,6 +77,7 @@ kNN <- function(x, k, sort = TRUE, search = "kdtree", bucketSize = 10,
     as.integer(splitRule), as.double(approx))
 
   ### sort entries (by dist and id)?
+  ### FIXME: This is expensive! We should do this in C++
   if(sort && k>1) {
     o <- sapply(1:nrow(ret$dist), FUN =
         function(i) order(ret$dist[i,], ret$id[i,], decreasing=FALSE))
@@ -89,5 +90,12 @@ kNN <- function(x, k, sort = TRUE, search = "kdtree", bucketSize = 10,
   dimnames(ret$dist) <- list(rownames(x), 1:k)
   dimnames(ret$id) <- list(rownames(x), 1:k)
 
+  class(ret) <- "kNN"
   ret
+}
+
+print.kNN <- function(x, ...) {
+  cat("k-nearest neighbors for ", nrow(x$id), " objects (k=", x$k,").",
+    "\n", sep = "")
+  cat("Available fields: ", paste(names(x), collapse = ", "), "\n", sep = "")
 }
