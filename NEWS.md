@@ -1,3 +1,9 @@
+# dbscan 1.1-1 (2017-03-19)
+
+## Bugfix
+
+* Fixed problem with constant name on Solaris in ANN code.
+
 # dbscan 1.1-0 (2017-03-18)
 
 ## New Features
