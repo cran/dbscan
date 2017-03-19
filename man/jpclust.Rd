@@ -34,7 +34,10 @@ Fast nearest neighbors search with \code{kNN()} is only used if
 \code{x} is a matrix. In this case Euclidean distance is used.
 }
 \value{
-  A vector with cluster assignments.
+  A object of class 'general_clustering' with the following components:
+  \item{cluster }{A integer vector with cluster assignments. Zero indicates noise points.}
+  \item{type }{ name of used clustering algorithm.}
+  \item{param }{ list of used clustering parameters. }
 }
 \references{
 R. A. Jarvis and E. A. Patrick. 1973. Clustering Using a Similarity Measure Based on Shared Near Neighbors. \emph{IEEE Trans. Comput. 22,} 11 (November 1973), 1025-1034.
@@ -49,18 +52,32 @@ R. A. Jarvis and E. A. Patrick. 1973. Clustering Using a Similarity Measure Base
 }
 
 \examples{
-data(iris)
-iris <- as.matrix(iris[,1:4]) ### only use numeric attributes
+data("DS3")
 
-# use a shared neighborhood of 10 points and require 6 shared neighbors
-cl <- jpclust(iris, k = 10, kt = 6)
-pairs(iris, col = cl)
+# use a shared neighborhood of 20 points and require 12 shared neighbors
+cl <- jpclust(DS3, k = 20, kt = 12)
+cl
+
+plot(DS3, col = cl$cluster+1L, cex = .5)
+# Note: JP clustering does not consider noise and thus,
+# the sine wave points chain clusters together.
 
 # use a precomputed kNN object instead of the original data.
-nn <- kNN(iris, k = 15)
+nn <- kNN(DS3, k = 30)
 nn
 
-cl <- jpclust(nn, k = 10, kt = 6)
+cl <- jpclust(nn, k = 20, kt = 12)
+cl
+
+# cluster with noise removed (use low pointdensity to identify noise)
+d <- pointdensity(DS3, eps = 25)
+hist(d, breaks = 20)
+DS3_noiseless <- DS3[d > 110,]
+
+cl <- jpclust(DS3_noiseless, k = 20, kt = 10)
+cl
+
+plot(DS3_noiseless, col = cl$cluster+1L, cex = .5)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

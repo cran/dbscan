@@ -7,15 +7,22 @@
 
  This R package provides a fast C++ reimplementation of several density-based algorithms of the DBSCAN 
  family for spatial data. 
- Includes the __DBSCAN__ (density-based spatial clustering of applications with noise) and 
- __OPTICS/OPTICSXi__ (ordering points to identify the clustering structure) clustering algorithms and the 
- __LOF__ (local outlier factor) algorithm. The implementations uses the kd-tree data 
+ The package includes: 
+ 
+* __DBSCAN:__ Density-based spatial clustering of applications with noise.
+* __OPTICS/OPTICSXi:__ Ordering points to identify the clustering structure clustering algorithms.
+* __HDBSCAN:__  Hierarchical DBSCAN with simplified hierarchy extraction.
+* __LOF:__ Local outlier factor algorithm. 
+* __GLOSH:__ Global-Local Outlier Score from Hierarchies algorithm. 
+
+The implementations uses the kd-tree data 
  structure (from library ANN) for faster k-nearest neighbor search. 
- An R interface to __fast kNN and fixed-radius NN search__ is also provided.
+ An R interface to __fast kNN and fixed-radius NN search__ is provided along with __Jarvis-Patrick clustering__ and __Shared Nearest Neighbor Clustering.__ Additionally, a fast implementation of the __Framework for Optimal Selection of Clusters (FOSC)__ is
+ available that supports unsupervised and semisupervised clustering of hierarchical cluster tree ('hclust' object). 
+ Supports any arbitrary linkage criterion. 
 
-This implementation is typically faster than the native R implementation in package `fpc`, or the 
+The implementations are typically faster than the native R implementations (e.g., dbscan in package `fpc`), or the 
 implementations in [WEKA](http://www.cs.waikato.ac.nz/ml/weka/), [ELKI](https://elki-project.github.io/) and [Python's scikit-learn](http://scikit-learn.org/).
-
 
 ## Installation
 
@@ -92,6 +99,35 @@ Extract a hierarchical clustering using the Xi method (captures clusters of vary
 opt <- extractXi(opt, xi = .05)
 opt
 plot(opt)
+```
+
+Run HDBSCAN (captures stable clusters)
+```R
+hdb <- hdbscan(x, minPts = 4)
+hdb
+```
+
+```
+HDBSCAN clustering for 150 objects.
+Parameters: minPts = 4
+The clustering contains 2 cluster(s) and 0 noise points.
+
+  1   2 
+100  50 
+
+Available fields: cluster, minPts, cluster_scores, membership_prob, outlier_scores, hc
+```
+
+Visualize the results as a simplified tree 
+```R
+plot(hdb, show_flat = T)
+```
+
+See how well each point corresponds to the clusters found by the model used
+```R
+  colors <- mapply(function(col, i) adjustcolor(col, alpha.f = hdb$membership_prob[i]), 
+                   palette()[hdb$cluster+1], seq_along(hdb$cluster))
+  plot(x, col=colors, pch=20)
 ```
 
 ## License 

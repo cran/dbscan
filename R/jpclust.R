@@ -20,7 +20,7 @@
 
 jpclust <- function(x, k, kt, ...) {
 
-  # Step 1
+  # Create NN graph
   if(is(x, "kNN")) {
     if(missing(k)) k <- nn$k
     nn <- x$id[,1:k]
@@ -31,9 +31,32 @@ jpclust <- function(x, k, kt, ...) {
   if(length(kt) != 1 || kt < 1 || kt > k)
     stop("kt needs to be a threshold in range [1, k].")
 
-  # Step 2
+  # Perform clustering
   cl <- JP_int(nn, kt = as.integer(kt))
 
-  # Step 3
-  as.integer(factor(cl))
+  structure(list(cluster = as.integer(factor(cl)),
+    type = "Jarvis-Patrick clustering",
+    param = list(k = k, kt = kt)),
+    class = c("general_clustering"))
+}
+
+
+
+print.general_clustering <- function(x, ...) {
+  cl <- unique(x$cluster)
+  cl <- length(cl[cl!=0L])
+
+  writeLines(c(
+    paste0(x$type," for ", length(x$cluster), " objects."),
+    paste0("Parameters: ",
+    paste(names(x$param), unlist(x$param), sep = "=", collapse = ", ")),
+    paste0("The clustering contains ", cl, " cluster(s) and ",
+      sum(x$cluster==0L), " noise points.")
+    ))
+
+  print(table(x$cluster))
+  cat("\n")
+
+  writeLines(strwrap(paste0("Available fields: ",
+    paste(names(x), collapse = ", ")), exdent = 18))
 }

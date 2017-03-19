@@ -13,7 +13,7 @@ lof(x, k = 4, ...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{ a data matrix or a dist object. }
-  \item{k}{ size if neighborhood. }
+  \item{k}{ size of the neighborhood. }
   \item{\dots}{ further arguments are passed on to \code{kNN}. }
 }
 \details{
@@ -41,9 +41,8 @@ Breunig, M., Kriegel, H., Ng, R., and Sander, J. (2000). LOF: identifying
 \author{
     Michael Hahsler
 }
-
 \seealso{
-\code{\link{kNN}}.
+\code{\link{kNN}}, \code{\link{pointdensity}}, \code{\link{glosh}}.
 }
 \examples{
 set.seed(665544)

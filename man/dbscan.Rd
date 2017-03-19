@@ -70,7 +70,6 @@ cluster will be reported as members of the noise cluster 0.
     \item{eps }{ value of the eps parameter.}
     \item{minPts }{ value of the minPts parameter.}
     \item{cluster }{A integer vector with cluster assignments. Zero indicates noise points.}
-  %% ...
 }
 \references{
 Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise. Institute for Computer Science, University of Munich. \emph{Proceedings of 2nd International Conference on Knowledge Discovery and Data Mining (KDD-96).}
@@ -98,15 +97,15 @@ iris <- as.matrix(iris[,1:4])
 ## find suitable eps parameter using a k-NN plot for k = dim + 1
 ## Look for the knee!
 kNNdistplot(iris, k = 5)
-abline(h=.4, col = "red", lty=2)
+abline(h=.5, col = "red", lty=2)
 
-res <- dbscan(iris, eps = .4, minPts = 5)
+res <- dbscan(iris, eps = .5, minPts = 5)
 res
 
 pairs(iris, col = res$cluster + 1L)
 
 ## use precomputed frNN
-fr <- frNN(iris, eps = .4)
+fr <- frNN(iris, eps = .5)
 dbscan(fr, minPts = 5)
 
 ## example data from fpc
