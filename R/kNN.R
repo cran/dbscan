@@ -17,11 +17,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-.ANNsplitRule <- c("STD", "MIDPT", "FAIR", "SL_MIDPT", "SL_FAIR", "SUGGEST")
-.matrixlike <- function(x) return(!is.null(dim(x)))
-
-
 kNN <- function(x, k, sort = TRUE, search = "kdtree", bucketSize = 10,
   splitRule = "suggest", approx = 0) {
 
@@ -59,9 +54,10 @@ kNN <- function(x, k, sort = TRUE, search = "kdtree", bucketSize = 10,
     if(k >= nrow(x)) stop("Not enought neighbors in data set!")
 
     o <- t(apply(x, 1, order, decreasing = FALSE))
-    id <- o[,1:k]
+    id <- o[,1:k, drop = FALSE]
     dimnames(id) <- list(rownames(x), 1:k)
-    d <- t(sapply(1:nrow(id), FUN = function(i) x[i, id[i,]]))
+    d <- t(sapply(1:nrow(id), FUN = function(i) x[i, id[i,], drop = FALSE]))
+    if(k==1) d <- t(d) ### sapply drops an array with a single column!
     dimnames(d) <- list(rownames(x), 1:k)
 
     return(structure(list(dist = d, id = id, k = k, sort = TRUE),
@@ -130,3 +126,4 @@ print.kNN <- function(x, ...) {
     "\n", sep = "")
   cat("Available fields: ", paste(names(x), collapse = ", "), "\n", sep = "")
 }
+

@@ -6,7 +6,7 @@
 Calculate and plot the k-Nearest Neighbor Distance
 }
 \description{
-Fast caclulation of the k-nearest neighbor distances in a matrix of points.
+Fast calculation of the k-nearest neighbor distances in a matrix of points.
 The plot can be used to help find a suitable value for the
 \code{eps} neighborhood for DBSCAN. Look for the knee in the plot.
 }
@@ -21,7 +21,7 @@ kNNdistplot(x, k = 4, ...)
   \item{...}{further arguments are passed on to \code{kNN}.}
   }
 \details{
-See \code{\link{kNN}} for a discusion of the kd-tree related parameters.
+See \code{\link{kNN}} for a discussion of the kd-tree related parameters.
 }
 \value{
 \code{kNNdist} returns a numeric vector with the distance to its k nearest

@@ -1,8 +1,18 @@
+# dbscan 1.1-2 (2018-05-18)
+
+## New Features
+* OPTICS now calculates eps if it is ommited.
+
+## Bugfix
+
+* Example now only uses igraph conditionally since it is unavailable 
+  on Solaris (reported by B. Ripley).
+
 # dbscan 1.1-1 (2017-03-19)
 
 ## Bugfix
 
-* Fixed problem with constant name on Solaris in ANN code.
+* Fixed problem with constant name on Solaris in ANN code (reported by B. Ripley).
 
 # dbscan 1.1-0 (2017-03-18)
 

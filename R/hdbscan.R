@@ -17,30 +17,31 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-hdbscan <- function(x, minPts, xdist=NULL, gen_hdbscan_tree = FALSE, gen_simplified_tree=FALSE) {
-  ## Type Checking
-  if (is(x, "data.table") || is(x, "data.frame") || is(x, "matrix")){
-    x <- as.matrix(x)
-    if (!storage.mode(x) %in% c("integer", "double")){
-      stop("hdbscan expects numerical data")
-    }
-  } else { stop("hdbscan expects a matrix-conformable object for x") }
+hdbscan <- function(x, minPts, xdist = NULL,
+  gen_hdbscan_tree = FALSE, gen_simplified_tree=FALSE) {
 
-  ## Calculate Core distance using kNN
-  if (missing(xdist)) {
-    euc_dist <- dist(as.matrix(x), method = "euclidean")
-    core_dist <- kNNdist(x, k = minPts - 1)[, minPts - 1]
-    n <- nrow(x)
-  } else if (!missing(xdist) && is(xdist, "dist")) {
-    euc_dist <- xdist
-    core_dist <- kNNdist(x, k = minPts - 1)[, minPts - 1]
-    n <- nrow(x)
-  } else {
-    stop("xdist must be a dist object")
-  }
+  if(.matrixlike(x) && !is(x, "dist")) {
+    x <- as.matrix(x)
+    if (!storage.mode(x) %in% c("integer", "double")) stop("hdbscan expects numerical data")
+
+    ## x is a point cloud. Whether xdist is given or not, need all the distances. 
+    if (missing(xdist)){ 
+      core_dist <- kNNdist(x, k = minPts - 1)[, minPts - 1]
+      xdist <- dist(x, method = "euclidean") 
+    } else if (is(xdist, "dist")) {
+      core_dist <- kNNdist(xdist, k = minPts - 1)[, minPts - 1] 
+    }
+  } else if (is(x, "dist") && missing(xdist)) {
+    ## let kNNdist handle the any non-euclidean knn-queries
+    xdist <- x
+    core_dist <- kNNdist(xdist, k = minPts - 1)[, minPts - 1] 
+  } else{ stop("hdbscan expects a matrix-coercible object of numerical data, and xdist to be a 'dist' object (or not supplied).") }
+  
+  ## At this point, xdist should be a dist object. 
+  n <- attr(xdist, "Size")
 
   ## Mutual Reachability matrix
-  mrd <- mrd(euc_dist, core_dist)
+  mrd <- mrd(xdist, core_dist)
 
   ## Get MST, convert to RSL representation
   mst <- prims(mrd, n)
