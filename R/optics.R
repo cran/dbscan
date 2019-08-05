@@ -20,7 +20,7 @@
 optics <- function(x, eps = NULL, minPts = 5, ...) {
 
   ### find eps from minPts
-  if(is.null(eps)) eps <- max(kNNdist(x, k =  minPts)[,minPts])
+  if(is.null(eps)) eps <- max(kNNdist(x, k =  minPts))
 
   ### extra contains settings for frNN
   ### search = "kdtree", bucketSize = 10, splitRule = "suggest", approx = 0
@@ -153,20 +153,6 @@ plot.optics <- function(x, cluster = TRUE, predecessor = FALSE, ...) {
     # Regular reachability plot
     plot(as.reachability(x), ...)
   }
-}
-
-predict.optics <- function (object, newdata = NULL, data, ...) {
-  if (is.null(newdata)) return(object$cluster)
-  if (is.null(object$cluster)) stop("no extracted clustering available in object! run extractDBSCAN or extractXi first.")
-
-  nn <- frNN(rbind(data, newdata), eps = object$eps_cl,
-    sort = TRUE, ...)$id[-(1:nrow(data))]
-  sapply(nn, function(x) {
-    x <- x[x<=nrow(data)]
-    x <- object$cluster[x][x>0][1]
-    x[is.na(x)] <- 0L
-    x
-  })
 }
 
 # Simple conversion between OPTICS objects and reachability objects

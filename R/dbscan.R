@@ -20,6 +20,7 @@
 dbscan <- function(x, eps, minPts = 5, weights = NULL, borderPoints = TRUE,
   ...) {
 
+
   if(is(x, "frNN") && missing(eps)) eps <- x$eps
 
   ### extra contains settings for frNN
@@ -87,6 +88,10 @@ dbscan <- function(x, eps, minPts = 5, weights = NULL, borderPoints = TRUE,
   if(length(frNN) > 0)
     frNN <- lapply(1:length(frNN), FUN = function(i) c(i-1L, frNN[[i]]-1L))
 
+  if(length(minPts) !=1 || ! is.finite(minPts) || minPts < 0) stop("minPts need to be a single integer >=0.")
+
+  if(is.null(eps) || is.na(eps) || eps < 0) stop("eps needs to be >=0.")
+
   ret <- dbscan_int(x, as.double(eps), as.integer(minPts),
     as.double(weights), as.integer(borderPoints),
     as.integer(search), as.integer(bucketSize),
@@ -113,17 +118,4 @@ print.dbscan_fast <- function(x, ...) {
 
   writeLines(strwrap(paste0("Available fields: ",
     paste(names(x), collapse = ", ")), exdent = 18))
-}
-
-predict.dbscan_fast <- function (object, newdata = NULL, data, ...) {
-  if (is.null(newdata)) return(object$cluster)
-
-  nn <- frNN(rbind(data, newdata), eps = object$eps,
-    sort = TRUE, ...)$id[-(1:nrow(data))]
-  sapply(nn, function(x) {
-    x <- x[x<=nrow(data)]
-    x <- object$cluster[x][x>0][1]
-    x[is.na(x)] <- 0L
-    x
-    })
 }
