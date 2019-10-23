@@ -75,13 +75,31 @@ nn_d <- dbscan::frNN(x, eps = eps, sort = TRUE, search = "dist")
 expect_equal(nn, nn_d)
 
 ## sort and frNN to reduce eps
-nn5 <- frNN(x, eps = .5, sort = FALSE)
+nn5 <- dbscan::frNN(x, eps = .5, sort = FALSE)
 expect_equal(nn5$sort, FALSE)
 
 nn5s <- sort(nn5)
 expect_equal(nn5s$sort, TRUE)
 expect_equal(all(sapply(nn5s$dist, FUN = function(x) all(x == sort(x)))), TRUE)
 
-expect_error(frNN(nn5, eps = 1))
-nn2 <- frNN(nn5, eps = .2)
+expect_error(dbscan::frNN(nn5, eps = 1))
+nn2 <- dbscan::frNN(nn5, eps = .2)
 expect_equal(all(sapply(nn2$dist, FUN = function(x) all(x <=.2))), TRUE)
+
+
+## test with simple data
+x <- data.frame(x=1:10, row.names = LETTERS[1:10])
+nn <- dbscan::frNN(x, eps = 2)
+expect_equivalent(nn$id[[1]], 2:3)
+expect_equivalent(nn$id[[5]], c(4,6,3,7))
+expect_equivalent(nn$id[[10]], 9:8)
+
+## test kNN with query
+x <- data.frame(x=1:10, row.names = LETTERS[1:10])
+nn <- dbscan::frNN(x[1:8, , drop=FALSE], x[9:10, , drop = FALSE], eps = 2)
+
+expect_equivalent(length(nn$id), 2L)
+expect_equivalent(nn$id[[1]], 8:7)
+expect_equivalent(nn$id[[2]], 8)
+
+expect_error(nn <- dbscan::frNN(dist(x[1:8, , drop=FALSE]), x[9:10, , drop = FALSE], eps = 2))

@@ -20,7 +20,7 @@ dbscan(x, eps, minPts = 5, weights = NULL, borderPoints = TRUE, ...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{a data matrix or a dist object. Alternatively, a frNN object
-    with fixed-radius nearest neighbors can also be specified. In this case
+    with fixed-radius nearest neighbors can also be specified (see Example section). In this case
     eps can be missing and will be taken form the frNN object.}
   \item{eps}{ size of the epsilon neighborhood.}
   \item{minPts}{ number of minimum points in the eps region (for core points).
@@ -42,7 +42,7 @@ dbscan(x, eps, minPts = 5, weights = NULL, borderPoints = TRUE, ...)
 \emph{Note:} use \code{dbscan::dbscan} to call this
 implementation when you also use package \pkg{fpc}.
 
-This implementation of DBSCAN implements the original algorithm as described by
+This implementation of DBSCAN (Hahsler et al, 2019) implements the original algorithm as described by
 Ester et al (1996). DBSCAN estimates the density around each data point by counting the number of points in a user-specified eps-neighborhood and applies a used-specified minPts thresholds to identify core, border and noise points. In a second step, core points are joined into a cluster if they are density-reachable (i.e., there is a chain of core points where one falls inside the eps-neighborhood of the next). Finally, border points are assigned to clusters. The algorithm only needs
 parameters \code{eps} and \code{minPts}.
 
@@ -72,7 +72,10 @@ cluster will be reported as members of the noise cluster 0.
     \item{cluster }{A integer vector with cluster assignments. Zero indicates noise points.}
 }
 \references{
-Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise. Institute for Computer Science, University of Munich. \emph{Proceedings of 2nd International Conference on Knowledge Discovery and Data Mining (KDD-96).}
+Hahsler M, Piekenbrock M, Doran D (2019). dbscan: Fast Density-Based Clustering with R.
+  \emph{Journal of Statistical Software}, 91(1), 1-30. \doi{10.18637/jss.v091.i01}
+
+Martin Ester, Hans-Peter Kriegel, Joerg Sander, Xiaowei Xu (1996). A Density-Based Algorithm for Discovering Clusters in Large Spatial Databases with Noise. Institute for Computer Science, University of Munich. \emph{Proceedings of 2nd International Conference on Knowledge Discovery and Data Mining (KDD-96)}, 226-231.
 
 Campello, R. J. G. B.; Moulavi, D.; Sander, J. (2013). Density-Based Clustering
 Based on Hierarchical Density Estimates. \emph{Proceedings of the 17th
@@ -91,6 +94,7 @@ in Databases, PAKDD 2013,} Lecture Notes in Computer Science 7819, p. 160.
 }
 
 \examples{
+## Example 1: use dbscan on the iris data set
 data(iris)
 iris <- as.matrix(iris[,1:4])
 
@@ -108,7 +112,7 @@ pairs(iris, col = res$cluster + 1L)
 fr <- frNN(iris, eps = .5)
 dbscan(fr, minPts = 5)
 
-## example data from fpc
+## Example 2: use data from fpc
 set.seed(665544)
 n <- 100
 x <- cbind(
@@ -155,6 +159,12 @@ if (requireNamespace("fpc", quietly = TRUE) &&
   ## speedup of the kd-tree-based version compared to the fpc implementation
   median(t_fpc$time) / median(t_dbscan$time)
 }}
+
+## Example 3: manually create a frNN object for dbscan (dbscan only needs ids and eps)
+nn <- structure(list(ids = list(c(2,3), c(1,3), c(1,2,3), c(3,5), c(4,5)), eps = 1),
+  class =  c("NN", "frNN"))
+nn
+dbscan(nn, minPts = 2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
