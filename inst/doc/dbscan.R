@@ -1,5 +1,4 @@
 ### R code from vignette source 'dbscan.Rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: dbscan.Rnw:132-134

@@ -17,30 +17,24 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-hdbscan <- function(x, minPts, xdist = NULL,
+hdbscan <- function(x, minPts,
   gen_hdbscan_tree = FALSE, gen_simplified_tree=FALSE) {
 
-  if(.matrixlike(x) && !is(x, "dist")) {
+  if(.matrixlike(x) && !inherits(x, "dist")) {
     x <- as.matrix(x)
-    if (!storage.mode(x) %in% c("integer", "double")) stop("hdbscan expects numerical data")
-
-    ## x is a point cloud. Whether xdist is given or not, need all the distances. 
-    if (missing(xdist)){ 
-      core_dist <- kNNdist(x, k = minPts - 1)
-      xdist <- dist(x, method = "euclidean") 
-    } else if (is(xdist, "dist")) {
-      core_dist <- kNNdist(xdist, k = minPts - 1) 
-    }
-  } else if (is(x, "dist") && missing(xdist)) {
-    ## let kNNdist handle the any non-euclidean knn-queries
+    if (!is.numeric(x)) stop("hdbscan expects numerical data")
+    xdist <- dist(x, method = "euclidean")
+  } else if (inherits(x, "dist")) {
+    ## this is for non-euclidean distances (note: this is slower for kNNdist)
     xdist <- x
-    core_dist <- kNNdist(xdist, k = minPts - 1) 
   } else{ stop("hdbscan expects a matrix-coercible object of numerical data, and xdist to be a 'dist' object (or not supplied).") }
-  
-  ## At this point, xdist should be a dist object. 
+
+  core_dist <- kNNdist(x, k = minPts - 1)
+
+  ## At this point, xdist should be a dist object.
   n <- attr(xdist, "Size")
 
-  ## Mutual Reachability matrix
+  ## Mutual reachability matrix
   mrd <- mrd(xdist, core_dist)
 
   ## Get MST, convert to RSL representation

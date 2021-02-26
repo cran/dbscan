@@ -1,3 +1,17 @@
+# dbscan 1.1-6 (2021-02-24)
+
+## Improvements 
+* Improved speed of LOF for large ks (following suggestions by eduardokapp). 
+* kNN: results is now not sorted again for kd-tree queries which is much faster (by a factor of 10).
+* ANN library: annclose() is now only called once when the package is unloaded. This is in preparation to support persistent kd-trees using external pointers.
+* hdbscan lost parameter xdist.
+
+## Bugfixes
+* removed dependence on methods.
+* fixed problem in hullplot for singleton clusters (reported by Fernando Archuby).
+* GLOSH now also accepts data.frames.
+* GLOSH returns now 0 instead of NaN if we have k duplicate points in the data.
+
 # dbscan 1.1-5 (2019-10-22)
 
 ## New Features

@@ -23,7 +23,7 @@
 kNN <- function(x, k, query = NULL, sort = TRUE, search = "kdtree", bucketSize = 10,
   splitRule = "suggest", approx = 0) {
 
-  if(is(x, "kNN")) {
+  if(inherits(x, "kNN")) {
     if(x$k < k) stop("kNN in x has not enough nearest neighbors.")
     if(!x$sort) x <- sort(x)
     x$id <- x$id[,1:k]
@@ -41,13 +41,13 @@ kNN <- function(x, k, query = NULL, sort = TRUE, search = "kdtree", bucketSize =
 
   ### dist search
   if(search == 3) {
-    if(!is(x, "dist"))
+    if(!inherits(x, "dist"))
       if(.matrixlike(x)) x <- dist(x)
       else stop("x needs to be a matrix to calculate distances")
   }
 
   ### get kNN from a dist object
-  if(is(x, "dist")) {
+  if(inherits(x, "dist")) {
 
     if(!is.null(query)) stop("query can only be used if x contains the data.")
 
@@ -104,16 +104,16 @@ kNN <- function(x, k, query = NULL, sort = TRUE, search = "kdtree", bucketSize =
     dimnames(ret$id) <- list(rownames(x), 1:k)
   }
 
-  ret$sort <- FALSE
   class(ret) <- c("kNN", "NN")
 
-  ### sort entries (by dist and id)?
-  ### FIXME: This is expensive! We should do this in C++
+  ### ANN already returns them sorted (by dist but not by ID)
   if(sort) ret <- sort(ret)
 
   ret
 }
 
+
+### FIXME: This is expensive! We should do this in C++
 sort.kNN <- function(x, decreasing = FALSE, ...) {
   if(!is.null(x$sort) && x$sort) return(x)
   if(is.null(x$dist)) stop("Unable to sort. Distances are missing.")

@@ -141,11 +141,9 @@ IntegerVector dbscan_int(
   }
 
   // cleanup
-  if(kdTree != NULL) {
-    delete kdTree;
-    annDeallocPts(dataPts);
-    annClose();
-  }
+  if (kdTree != NULL) delete kdTree;
+  if (dataPts != NULL)  annDeallocPts(dataPts);
+  // annClose(); is now done globally in the package
 
   return wrap(id);
 }

@@ -25,7 +25,7 @@ hullplot <- function(x, cl, col = NULL,
   if(ncol(x)>2) x <- prcomp(x)$x
 
   ### extract clustering (keep hierarchical xICSXi structure)
-  if(is(cl, "xics") || "clusters_xi" %in% names(cl)) {
+  if(inherits(cl, "xics") || "clusters_xi" %in% names(cl)) {
     clusters_xi <- cl$clusters_xi
     cl_order <- cl$order
   } else clusters_xi <- NULL
@@ -47,7 +47,7 @@ hullplot <- function(x, cl, col = NULL,
     border <- NA
   }
 
-  if(is(cl, "xics") || "clusters_xi" %in% names(cl)) {
+  if(inherits(cl, "xics") || "clusters_xi" %in% names(cl)) {
     ## This is necessary for larger datasets: Ensure largest is plotted first
     clusters_xi <- clusters_xi[order(-(clusters_xi$end-clusters_xi$start)),] # Order by size (descending)
     ci_order <- clusters_xi$cluster_id
@@ -56,8 +56,8 @@ hullplot <- function(x, cl, col = NULL,
   for(i in 1:length(ci_order)) {
 
     ### use all the points for xICSXi's hierarchical structure
-    if(is.null(clusters_xi)) { d <- x[cl==i,]
-    } else { d <- x[cl_order[clusters_xi$start[i] : clusters_xi$end[i]],] }
+    if(is.null(clusters_xi)) { d <- x[cl == i, , drop = FALSE]
+    } else { d <- x[cl_order[clusters_xi$start[i] : clusters_xi$end[i]], , drop = FALSE] }
 
     ch <- chull(d)
     ch <- c(ch, ch[1])

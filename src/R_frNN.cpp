@@ -8,7 +8,6 @@
 // GNU General Public License (GPL) Version 3
 // (see: http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-// Note: does not return self-matches unless selfmatches = TRUE
 
 #include <Rcpp.h>
 #include "ANN/ANN.h"
@@ -80,7 +79,7 @@ List frNN_int(NumericMatrix data, double eps, int type,
   // cleanup
   delete kdTree;
   annDeallocPts(dataPts);
-  annClose();
+  // annClose(); is now done globally in the package
 
   // prepare results
   List ret;
@@ -165,7 +164,7 @@ List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int typ
   delete kdTree;
   annDeallocPts(dataPts);
   annDeallocPts(queryPts);
-  annClose();
+  // annClose(); is now done globally in the package
 
   // prepare results
   List ret;

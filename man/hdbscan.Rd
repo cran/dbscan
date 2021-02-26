@@ -11,7 +11,7 @@
   algorithms using Rcpp.
 }
 \usage{
-hdbscan(x, minPts, xdist = NULL,
+hdbscan(x, minPts,
     gen_hdbscan_tree = FALSE,
     gen_simplified_tree = FALSE)
 
@@ -21,9 +21,8 @@ hdbscan(x, minPts, xdist = NULL,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{a data matrix or a dist object. }
+  \item{x}{a data matrix (Euclidean distances are used) or a dist object calculated with an arbitrary distance metric. }
   \item{minPts}{ integer; Minimum size of clusters. See details. }
-  \item{xdist}{ an optional precomputed dist object. May reduce computation time if supplied. }
   \item{gen_hdbscan_tree}{ logical; should the robust single linkage tree be
   explicitly computed. (see cluster tree in Chaudhuri et al, 2010).}
   \item{gen_simplified_tree}{ logical; should the simplified hierarchy be
@@ -57,9 +56,9 @@ Note that \code{minPts} not only acts as a minimum cluster size to detect, but a
 Hahsler M, Piekenbrock M, Doran D (2019). dbscan: Fast Density-Based Clustering with R.
   \emph{Journal of Statistical Software}, 91(1), 1-30. \doi{10.18637/jss.v091.i01}
 
-Campello RJGB, Moulavi D, Sander J (2013). Density-Based Clustering Based on Hierarchical Density Estimates. \emph{Proceedings of the 17th Pacific-Asia Conference on Knowledge Discovery in Databases, PAKDD 2013,} Lecture Notes in Computer Science 7819, p. 160.
+Campello RJGB, Moulavi D, Sander J (2013). Density-Based Clustering Based on Hierarchical Density Estimates. \emph{Proceedings of the 17th Pacific-Asia Conference on Knowledge Discovery in Databases, PAKDD 2013,} Lecture Notes in Computer Science 7819, p. 160. \doi{10.1007/978-3-642-37456-2_14}
 
-Campello RJGB, Moulavi D, Zimek A, Sander J (2015). Hierarchical density estimates for data clustering, visualization, and outlier detection. \emph{ACM Transactions on Knowledge Discovery from Data (TKDD),} 10(5):1-51.
+Campello RJGB, Moulavi D, Zimek A, Sander J (2015). Hierarchical density estimates for data clustering, visualization, and outlier detection. \emph{ACM Transactions on Knowledge Discovery from Data (TKDD),} 10(5):1-51. \doi{10.1145/2733381}
 }
 
 \seealso{
@@ -78,7 +77,11 @@ res <- hdbscan(moons, minPts = 5)
 res
 
 plot(res)
+plot(moons, col = res$cluster + 1L)
 
+## cluster the moons data set with HDBSCAN using Manhattan distances
+res <- hdbscan(dist(moons, method = "manhattan"), minPts = 5)
+plot(res)
 plot(moons, col = res$cluster + 1L)
 
 ## DS3 from Chameleon
