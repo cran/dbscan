@@ -38,14 +38,14 @@ plot(x, col = true_clusters, pch = true_clusters)
 ###################################################
 ### code chunk number 5: kNNdistplot
 ###################################################
-kNNdistplot(x, k = 3)
-abline(h=.05, col = "red", lty=2)
+kNNdistplot(x, k = 2)
+abline(h=.06, col = "red", lty=2)
 
 
 ###################################################
 ### code chunk number 6: dbscan.Rnw:641-643
 ###################################################
-res <- dbscan(x, eps = 0.05, minPts = 3)
+res <- dbscan(x, eps = 0.06, minPts = 3)
 res
 
 
@@ -62,20 +62,20 @@ hullplot(x, res)
 
 
 ###################################################
-### code chunk number 9: dbscan.Rnw:690-691
+### code chunk number 9: dbscan.Rnw:691-692
 ###################################################
 predict(res, x[1:25,], data = x)
 
 
 ###################################################
-### code chunk number 10: dbscan.Rnw:700-702
+### code chunk number 10: dbscan.Rnw:701-703
 ###################################################
 res <- optics(x, eps = 10, minPts = 10)
 res
 
 
 ###################################################
-### code chunk number 11: dbscan.Rnw:707-708
+### code chunk number 11: dbscan.Rnw:708-709
 ###################################################
 head(res$order, n = 15)
 
@@ -107,14 +107,14 @@ hullplot(x, res)
 
 
 ###################################################
-### code chunk number 16: dbscan.Rnw:774-776
+### code chunk number 16: dbscan.Rnw:775-777
 ###################################################
 res <- extractXi(res, xi = 0.05)
 res
 
 
 ###################################################
-### code chunk number 17: dbscan.Rnw:781-782
+### code chunk number 17: dbscan.Rnw:782-783
 ###################################################
 res$clusters_xi
 
@@ -132,7 +132,7 @@ hullplot(x, res)
 
 
 ###################################################
-### code chunk number 20: dbscan.Rnw:854-856
+### code chunk number 20: dbscan.Rnw:855-857
 ###################################################
 dend <- as.dendrogram(res)
 dend

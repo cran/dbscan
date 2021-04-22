@@ -17,34 +17,90 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-lof <- function(x, k = 4, ...) {
+lof <- function(x, minPts = 5, ...) {
 
-  # get n
+  ### parse extra parameters
+  extra <- list(...)
+
+  # check for deprecated k
+  if(!is.null(extra[["k"]])) {
+    minPts <- extra[["k"]] + 1
+    extra[["k"]] <- NULL
+    warning("lof: k is now deprecated. use minPts = ", minPts, " instead .")
+  }
+
+  args <- c("search", "bucketSize", "splitRule", "approx")
+  m <- pmatch(names(extra), args)
+  if(any(is.na(m))) stop("Unknown parameter: ",
+    paste(names(extra)[is.na(m)], collapse = ", "))
+  names(extra) <- args[m]
+
+  search <- if(is.null(extra$search)) "kdtree" else extra$search
+  search <- .parse_search(search)
+  splitRule <- if(is.null(extra$splitRule)) "suggest" else extra$splitRule
+  splitRule <- .parse_splitRule(splitRule)
+  bucketSize <- if(is.null(extra$bucketSize)) 10L else
+    as.integer(extra$bucketSize)
+  approx <- if(is.null(extra$approx)) 0L else as.integer(extra$approx)
+
+  ### precompute distance matrix for dist search
+  if(search == 3) {
+    if(!inherits(x, "dist"))
+      if(.matrixlike(x)) x <- dist(x)
+      else stop("x needs to be a matrix to calculate distances")
+  }
+
+  # get and check n
   if(inherits(x, "dist")) n <- attr(x, "Size")
   else n <- nrow(x)
-
   if(is.null(n)) stop("x needs to be a matrix or a dist object!")
+  if(minPts<2 || minPts>n)
+    stop("minPts has to be at least 2 and not larger than the number of points")
 
-  if(k<1 || k>=n)
-    stop("k has to be larger than 1 and smaller than the number of points")
 
-  # get k nearest neighbors + distances
-  d <- kNN(x, k, sort = TRUE, ...)
+  ### get LOF from a dist object
+  if(inherits(x, "dist")) {
+    if(any(is.na(x))) stop("NAs not allowed in dist for LOF!")
 
-  # calculate local reachability density
-  # reachability-distance_k(A,B)=max{k-distance(B), d(A,B)}
-  # lrdk(A)=1/(sum_B \in N_k(A) reachability-distance_k(A, B)/|N_k(A)|)
+    # find k-NN distance, ids and distances
+    x <- as.matrix(x)
+    diag(x) <- Inf ### no self-matches
+    o <- t(apply(x, 1, order, decreasing = FALSE))
+    k_dist <- x[cbind(o[,minPts-1], seq_len(n))]
+    ids <- lapply(seq_len(n), FUN = function(i) which(x[i, ] <= k_dist[i]))
+    dist <- lapply(seq_len(n), FUN = function(i) x[i, x[i, ] <= k_dist[i]])
+
+    ret <- list(dist = dist, ids = ids, k_dist = k_dist)
+
+  }else{
+    ### Use kd-tree
+
+    if(any(is.na(x))) stop("NAs not allowed for LOF using kdtree!")
+
+
+    ret <- lof_kNN(as.matrix(x), as.integer(minPts),
+      as.integer(search), as.integer(bucketSize),
+      as.integer(splitRule), as.double(approx))
+  }
+
+  # calculate local reachability density (LRD)
+  # reachability-distance_k(A,B) = max{k-distance(B), d(A,B)}
+  # lrdk(A) = 1/(sum_B \in N_k(A) reachability-distance_k(A, B) / |N_k(A)|)
   lrd <- numeric(n)
-  for(i in 1:n) lrd[i] <- 1/(sum(
-    pmax.int(d$dist[d$id[i,], k], d$dist[i,])) / k
-  )
+  for(A in seq_len(n)) {
+    Bs <- ret$ids[[A]]
+    lrd[A] <- 1/(sum(pmax.int(ret$k_dist[Bs], ret$dist[[A]])) / length(Bs))
+  }
 
-  # calculate lof
+  # calculate local outlier factor (LOF)
   # LOF_k(A) = sum_B \in N_k(A) lrd_k(B)/(|N_k(A)| lrdk(A))
   lof <- numeric(n)
-  for (i in 1:n) lof[i] <- sum(lrd[d$id[i,]])/k / lrd[i]
+  for (A in seq_len(n)) {
+    Bs <- ret$ids[[A]]
+    lof[A] <- sum(lrd[Bs])/ length(Bs) / lrd[A]
+  }
 
-  # with more than MinPts duplicates lrd can become infinity
+  # with more than k duplicates lrd can become infinity
   # we define them not to be outliers
   lof[is.nan(lof)] <- 1
 
