@@ -41,7 +41,7 @@ lof <- function(x, minPts = 5, ...) {
   splitRule <- .parse_splitRule(splitRule)
   bucketSize <- if(is.null(extra$bucketSize)) 10L else
     as.integer(extra$bucketSize)
-  approx <- if(is.null(extra$approx)) 0L else as.integer(extra$approx)
+  approx <- if(is.null(extra$approx)) 0 else as.double(extra$approx)
 
   ### precompute distance matrix for dist search
   if(search == 3) {
@@ -70,13 +70,12 @@ lof <- function(x, minPts = 5, ...) {
     ids <- lapply(seq_len(n), FUN = function(i) which(x[i, ] <= k_dist[i]))
     dist <- lapply(seq_len(n), FUN = function(i) x[i, x[i, ] <= k_dist[i]])
 
-    ret <- list(dist = dist, ids = ids, k_dist = k_dist)
+    ret <- list(k_dist = k_dist, ids = ids, dist = dist)
 
   }else{
     ### Use kd-tree
 
     if(any(is.na(x))) stop("NAs not allowed for LOF using kdtree!")
-
 
     ret <- lof_kNN(as.matrix(x), as.integer(minPts),
       as.integer(search), as.integer(bucketSize),
