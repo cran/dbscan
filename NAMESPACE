@@ -1,6 +1,7 @@
-useDynLib("dbscan", .registration=TRUE)
+useDynLib("dbscan", .registration = TRUE)
 import("Rcpp")
-importFrom("graphics", "plot", "points", "par", "segments", "lines", "polygon", "text")
+importFrom("graphics", "plot", "points", "par", "segments",
+  "lines", "polygon", "text")
 importFrom("grDevices", "palette", "chull", "adjustcolor")
 importFrom("stats", "dist", "hclust", "dendrapply", "as.dendrogram",
   "is.leaf", "prcomp")
@@ -38,6 +39,7 @@ S3method(as.reachability, optics)
 
 S3method(print, hdbscan)
 S3method(plot, hdbscan)
+S3method(predict, hdbscan)
 
 S3method(as.reachability, dendrogram)
 
