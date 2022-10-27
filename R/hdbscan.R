@@ -70,6 +70,7 @@
 #' explicitly computed (see cluster tree in Chaudhuri et al, 2010).
 #' @param gen_simplified_tree logical; should the simplified hierarchy be
 #' explicitly computed (see Campello et al, 2013).
+#' @param verbose report progress.
 #' @param ...  additional arguments are passed on.
 #' @param scale integer; used to scale condensed tree based on the graphics
 #' device. Lower scale results in wider trees.
@@ -96,6 +97,8 @@
 #' `mrdist()` returns a [dist] object containing pairwise mutual reachability distances.
 #'
 #' @author Matt Piekenbrock
+#'
+#' @references
 #' Campello RJGB, Moulavi D, Sander J (2013). Density-Based Clustering Based on
 #' Hierarchical Density Estimates. Proceedings of the 17th Pacific-Asia
 #' Conference on Knowledge Discovery in Databases, PAKDD 2013, _Lecture Notes
@@ -133,32 +136,43 @@
 #'
 #' ## Plot the actual clusters (noise has cluster id 0 and is shown in black)
 #' plot(DS3, col = res$cluster + 1L, cex = .5)
-#' @export hdbscan
+#' @export
 hdbscan <- function(x,
   minPts,
   gen_hdbscan_tree = FALSE,
-  gen_simplified_tree = FALSE) {
+  gen_simplified_tree = FALSE,
+  verbose = FALSE) {
   if (!inherits(x, "dist") && !.matrixlike(x))
     stop("hdbscan expects a numeric matrix or a dist object.")
 
-
   ## 1. Calculate the mutual reachability between points
+  if (verbose)
+    cat("Calculating core distances...\n")
   coredist <- coredist(x, minPts)
-  mrd <- mrdist(x, minPts, coredist = coredist)
+  if (verbose)
+    cat("Calculating the mutual reachability matrix distances...\n")
+  mrd <- mrdist(x, minPts, coredist
+    = coredist)
   n <- attr(mrd, "Size")
 
   ## 2. Construct a minimum spanning tree and convert to RSL representation
+  if (verbose)
+    cat("Constructing the minimum spanning tree...\n")
   mst <- prims(mrd, n)
   hc <- hclustMergeOrder(mst, order(mst[, 3]))
   hc$call <- match.call()
 
   ## 3. Prune the tree
   ## Process the hierarchy to retrieve all the necessary info needed by HDBSCAN
+  if (verbose)
+    cat("Tree pruning...\n")
   res <- computeStability(hc, minPts, compute_glosh = TRUE)
   res <- extractUnsupervised(res)
   cl <- attr(res, "cluster")
 
   ## 4. Extract the clusters
+  if (verbose)
+    cat("Extract clusters...\n")
   sl <- attr(res, "salient_clusters")
 
   ## Generate membership 'probabilities' using core distance as the measure of density
@@ -216,6 +230,8 @@ hdbscan <- function(x,
   return(out)
 }
 
+#' @rdname hdbscan
+#' @export
 print.hdbscan <- function(x, ...) {
   cl <- unique(x$cluster)
   cl <- length(cl[cl != 0L])
@@ -239,6 +255,7 @@ print.hdbscan <- function(x, ...) {
 }
 
 #' @rdname hdbscan
+#' @export
 plot.hdbscan <-
   function(x,
     scale = "suggest",
@@ -280,7 +297,7 @@ plot.hdbscan <-
 
     ## Depth-first search to recursively plot rectangles
     eps_dfs <- function(dend, index, parent_height, scale) {
-      coord <- coords[index,]
+      coord <- coords[index, ]
       cl_key <- as.character(attr(dend, "label"))
 
       ## widths == number of points in the cluster at each eps it was alive
@@ -399,18 +416,17 @@ plot.hdbscan <-
   }
 
 #' @rdname hdbscan
+#' @export
 coredist <- function(x, minPts) {
   k <- minPts - 1
   kNN(x, k = k , sort = TRUE)$dist[, k]
 }
 
 #' @rdname hdbscan
+#' @export
 mrdist <- function(x, minPts, coredist = NULL) {
   if (inherits(x, "dist")) {
-    if (attr(x, "Diag") || attr(x, "Upper"))
-      stop(
-        "if x is a dist object then it needs to be created with dist(..., diag = FALSE, upper = FALSE)"
-      )
+    .check_dist(x)
     x_dist <- x
   } else{
     x_dist <- dist(x,

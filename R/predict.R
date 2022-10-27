@@ -22,14 +22,19 @@
 #' @param data the data set used to create the clustering object.
 #' @param newdata new data points for which the cluster membership should be
 #' predicted.
-predict.dbscan_fast <- function (object, newdata, data, ...)
+#' @export
+predict.dbscan_fast <- function (object, newdata, data, ...) {
+  if (object$dist != "euclidean")
+    warning("dbscan used non-Euclidean distances, predict assigns new points using Euclidean distances!")
   .predict_frNN(newdata, data, object$cluster, object$eps, ...)
+}
 
 #' @rdname optics
 #' @param object clustering object.
 #' @param data the data set used to create the clustering object.
 #' @param newdata new data points for which the cluster membership should be
 #' predicted.
+#' @export
 predict.optics <- function (object, newdata, data, ...) {
   if (is.null(object$cluster) ||
       is.null(object$eps_cl) || is.na(object$eps_cl))
@@ -42,6 +47,7 @@ predict.optics <- function (object, newdata, data, ...) {
 #' @param data the data set used to create the clustering object.
 #' @param newdata new data points for which the cluster membership should be
 #' predicted.
+#' @export
 predict.hdbscan <- function(object, newdata, data, ...) {
   clusters <- object$cluster
 
@@ -64,6 +70,25 @@ predict.hdbscan <- function(object, newdata, data, ...) {
 .predict_frNN <- function(newdata, data, clusters, eps, ...) {
   if (is.null(newdata))
     return(clusters)
+
+  if (ncol(data) != ncol(newdata))
+    stop("Number of columns in data and newdata do not agree!")
+
+  if (nrow(data) != length(clusters))
+    stop("clustering does not agree with the number of data points in data.")
+
+  if (is.data.frame(data)) {
+    indx <- sapply(data, is.factor)
+    if (any(indx)) {
+      warning(
+        "data contains factors! The factors are converted to numbers and euclidean distances are used"
+      )
+    }
+    data[indx] <- lapply(data[indx], function(x)
+      as.numeric(x))
+    newdata[indx] <- lapply(newdata[indx], function(x)
+      as.numeric(x))
+  }
 
   # don't use noise
   data <- data[clusters != 0,]

@@ -17,7 +17,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#' Find Connected Components in a NN Graph
+#' Find Connected Components in a Nearest-neighbor Graph
 #'
 #' Generic function and methods to find connected components in nearest neighbor graphs.
 #'
@@ -69,20 +69,24 @@
 #' snn <- sNN(x, k = 10, kt = 5)
 #' components <- comps(snn)
 #' plot(snn, data = x, col = components)
-#' @export comps
+#' @export
 comps <- function(x, ...) UseMethod("comps", x)
 
 #' @rdname comps
+#' @export
 comps.dist <- function(x, eps, ...)
   stats::cutree(stats::hclust(x, method = "single"), h = eps)
 
 #' @rdname comps
+#' @export
 comps.kNN <- function(x, mutual = FALSE, ...)
   as.integer(factor(comps_kNN(x$id, as.logical(mutual))))
 
 # sNN and frNN are symmetric so no need for mutual
 #' @rdname comps
+#' @export
 comps.sNN <- function(x, ...) comps.kNN(x, mutual = FALSE)
 
 #' @rdname comps
+#' @export
 comps.frNN <- function(x, ...) comps_frNN(x$id, mutual = FALSE)

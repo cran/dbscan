@@ -31,6 +31,8 @@
 #' @param x the data set as a matrix of points (Euclidean distance is used) or
 #' a precalculated [dist] object.
 #' @param k number of nearest neighbors used for the distance calculation.
+#' @param minPts to use a k-NN plot to determine a suitable `eps` value for [dbscan()],
+#'    `minPts` used in dbscan can be specified and will set `k = minPts - 1`.
 #' @param all should a matrix with the distances to all k nearest neighbors be
 #' returned?
 #' @param ... further arguments (e.g., kd-tree related parameters) are passed
@@ -62,7 +64,7 @@
 #' cl <- dbscan(iris, eps = .7, minPts = 5)
 #' pairs(iris, col = cl$cluster + 1L)
 #' ## Note: black points are noise points
-#' @export kNNdist
+#' @export
 kNNdist <- function(x, k, all = FALSE, ...) {
   kNNd <- dbscan::kNN(x, k, sort = TRUE, ...)$dist
   if (!all)
@@ -71,8 +73,15 @@ kNNdist <- function(x, k, all = FALSE, ...) {
 }
 
 #' @rdname kNNdist
-kNNdistplot <- function(x, k, ...) {
-  kNNdist <- sort(kNNdist(x, k , ...))
+#' @export
+kNNdistplot <- function(x, k, minPts, ...) {
+  if (missing(k) && missing(minPts))
+    stop("k or minPts need to be specified.")
+
+  if (missing(k))
+    k <- minPts - 1
+
+  kNNdist <- sort(kNNdist(x, k, ...))
   plot(
     sort(kNNdist),
     type = "l",

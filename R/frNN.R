@@ -134,7 +134,6 @@ frNN <-
       return(x)
     }
 
-
     search <- .parse_search(search)
     splitRule <- .parse_splitRule(splitRule)
 
@@ -155,55 +154,26 @@ frNN <-
       if (any(is.na(x)))
         stop("data/distances cannot contain NAs for frNN (with kd-tree)!")
 
-      x <- as.matrix(x)
-      diag(x) <- Inf           ### no self-matches
-
-      id <- lapply(
-        1:nrow(x),
-        FUN = function(i) {
-          y <- x[i,]
-          o <- order(y, decreasing = FALSE)
-          o[y[o] <= eps]
-
-        }
-      )
-      names(id) <- rownames(x)
-
-      d <- lapply(
-        1:nrow(x),
-        FUN = function(i) {
-          unname(x[i, id[[i]]])
-        }
-      )
-      names(d) <- rownames(x)
-
-      ret <-
-        structure(list(
-          dist = d,
-          id = id,
-          eps = eps,
-          sort = TRUE
-        ),
-          class = c("frNN", "NN"))
-
-      return(ret)
+      return(dist_to_frNN(x, eps = eps, sort = sort))
     }
 
     ## make sure x is numeric
     if (!.matrixlike(x))
-      stop("x needs to be a matrix to calculate distances")
+      stop("x needs to be a matrix or a data.frame.")
     x <- as.matrix(x)
     if (storage.mode(x) == "integer")
       storage.mode(x) <- "double"
     if (storage.mode(x) != "double")
-      stop("x has to be a numeric matrix.")
+      stop("all data in x has to be numeric.")
 
     if (!is.null(query)) {
+      if (!.matrixlike(query))
+        stop("query needs to be a matrix or a data.frame.")
       query <- as.matrix(query)
       if (storage.mode(query) == "integer")
         storage.mode(query) <- "double"
       if (storage.mode(query) != "double")
-        stop("query has to be NULL or a numeric matrix.")
+        stop("query has to be NULL or a numeric matrix or data.frame.")
       if (ncol(x) != ncol(query))
         stop("x and query need to have the same number of columns!")
     }
@@ -248,7 +218,61 @@ frNN <-
     ret
   }
 
+# extract a row from a distance matrix without doubling space requirements
+dist_row <- function(x, i, self_val = 0) {
+  n <- attr(x, "Size")
+
+  i <- rep(i, times = n)
+  j <- seq_len(n)
+  swap_idx <- i > j
+  tmp <- i[swap_idx]
+  i[swap_idx] <- j[swap_idx]
+  j[swap_idx] <- tmp
+
+  diag_idx <- i == j
+  idx <- n * (i - 1) - i * (i - 1) / 2 + j - i
+  idx[diag_idx] <- NA
+
+  val <- x[idx]
+  val[diag_idx] <- self_val
+  val
+}
+
+dist_to_frNN <- function(x, eps, sort = FALSE) {
+  .check_dist(x)
+
+  n <- attr(x, "Size")
+
+  id <- list()
+  d <- list()
+
+  for (i in seq_len(n)) {
+    ### Inf -> no self-matches
+    y <- dist_row(x, i, self_val = Inf)
+    o <- which(y <= eps)
+    id[[i]] <- o
+    d[[i]] <- y[o]
+  }
+  names(id) <- labels(x)
+  names(d) <- labels(x)
+
+  ret <-
+    structure(list(
+      dist = d,
+      id = id,
+      eps = eps,
+      sort = FALSE
+    ),
+      class = c("frNN", "NN"))
+
+  if (sort)
+    ret <- sort.frNN(ret)
+
+  return(ret)
+}
+
 #' @rdname frNN
+#' @export
 sort.frNN <- function(x, decreasing = FALSE, ...) {
   if (!is.null(x$sort) && x$sort)
     return(x)
@@ -285,9 +309,12 @@ sort.frNN <- function(x, decreasing = FALSE, ...) {
 }
 
 #' @rdname frNN
+#' @export
 adjacencylist.frNN <- function(x, ...)
   x$id
 
+#' @rdname frNN
+#' @export
 print.frNN <- function(x, ...) {
   cat(
     "fixed radius nearest neighbors for ",

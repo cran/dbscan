@@ -93,7 +93,7 @@
 #'
 #' ## GLOSH is automatically computed with HDBSCAN
 #' all(hdbscan(x, minPts = 3)$outlier_scores == glosh(x, k = 3))
-#' @export glosh
+#' @export
 glosh <- function(x, k = 4, ...) {
   if (inherits(x, "data.frame"))
     x <- as.matrix(x)
@@ -111,6 +111,8 @@ glosh <- function(x, k = 4, ...) {
         x
     else
       dist(x, method = "euclidean") # copy since mrd changes by reference!
+
+    .check_dist(x_dist)
     mrd <- mrd(x_dist, d$dist[, k - 1])
 
     # need to assemble hclust object manually

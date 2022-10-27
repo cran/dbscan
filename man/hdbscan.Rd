@@ -10,7 +10,15 @@
 \alias{predict.hdbscan}
 \title{Hierarchical DBSCAN (HDBSCAN)}
 \usage{
-hdbscan(x, minPts, gen_hdbscan_tree = FALSE, gen_simplified_tree = FALSE)
+hdbscan(
+  x,
+  minPts,
+  gen_hdbscan_tree = FALSE,
+  gen_simplified_tree = FALSE,
+  verbose = FALSE
+)
+
+\method{print}{hdbscan}(x, ...)
 
 \method{plot}{hdbscan}(
   x,
@@ -38,6 +46,10 @@ explicitly computed (see cluster tree in Chaudhuri et al, 2010).}
 \item{gen_simplified_tree}{logical; should the simplified hierarchy be
 explicitly computed (see Campello et al, 2013).}
 
+\item{verbose}{report progress.}
+
+\item{...}{additional arguments are passed on.}
+
 \item{scale}{integer; used to scale condensed tree based on the graphics
 device. Lower scale results in wider trees.}
 
@@ -46,8 +58,6 @@ coloring with.}
 
 \item{show_flat}{logical; whether to draw boxes indicating the most stable
 clusters.}
-
-\item{...}{additional arguments are passed on.}
 
 \item{coredist}{numeric vector with precomputed core distances (optional).}
 
@@ -145,16 +155,7 @@ plot(res, show_flat = TRUE)
 ## Plot the actual clusters (noise has cluster id 0 and is shown in black)
 plot(DS3, col = res$cluster + 1L, cex = .5)
 }
-\seealso{
-Other clustering functions: 
-\code{\link{dbscan}()},
-\code{\link{extractFOSC}()},
-\code{\link{jpclust}()},
-\code{\link{optics}()},
-\code{\link{sNNclust}()}
-}
-\author{
-Matt Piekenbrock
+\references{
 Campello RJGB, Moulavi D, Sander J (2013). Density-Based Clustering Based on
 Hierarchical Density Estimates. Proceedings of the 17th Pacific-Asia
 Conference on Knowledge Discovery in Databases, PAKDD 2013, \emph{Lecture Notes
@@ -165,6 +166,17 @@ Campello RJGB, Moulavi D, Zimek A, Sander J (2015). Hierarchical density
 estimates for data clustering, visualization, and outlier detection.
 \emph{ACM Transactions on Knowledge Discovery from Data (TKDD),} 10(5):1-51.
 \doi{10.1145/2733381}
+}
+\seealso{
+Other clustering functions: 
+\code{\link{dbscan}()},
+\code{\link{extractFOSC}()},
+\code{\link{jpclust}()},
+\code{\link{optics}()},
+\code{\link{sNNclust}()}
+}
+\author{
+Matt Piekenbrock
 }
 \concept{HDBSCAN functions}
 \concept{clustering functions}

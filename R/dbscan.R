@@ -53,7 +53,7 @@
 #' If `x` is a matrix or a data.frame, then fast fixed-radius nearest
 #' neighbor computation using a kd-tree is performed using Euclidean distance.
 #' See [frNN()] for more information on the parameters related to
-#' nearest neighbor search.
+#' nearest neighbor search. **Note** that only numerical values are allowed in `x`.
 #'
 #' Any precomputed distance matrix (dist object) can be specified as `x`.
 #' You may run into memory issues since distance matrices are large.
@@ -84,9 +84,16 @@
 #'
 #' [predict()] can be used to predict cluster memberships for new data
 #' points. A point is considered a member of a cluster if it is within the eps
-#' neighborhood of a member of the cluster (Euclidean distance is used). Points
+#' neighborhood of a core point of the cluster. Points
 #' which cannot be assigned to a cluster will be reported as
 #' noise points (i.e., cluster ID 0).
+#' **Important note:** `predict()` currently can only use Euclidean distance to determine
+#' the neighborhood of core points. If `dbscan()` was called using distances other than Euclidean,
+#' then the neighborhood calculation will not be correct and only approximated by Euclidean
+#' distances. If the data contain factor columns (e.g., using Gower's distance), then
+#' the factors in `data` and `query` first need to be converted to numeric to use the
+#' Euclidean approximation.
+#'
 #'
 #' @aliases dbscan DBSCAN print.dbscan_fast
 #' @family clustering functions
@@ -142,7 +149,7 @@
 #' ## Find suitable DBSCAN parameters:
 #' ## 1. We use minPts = dim + 1 = 5 for iris. A larger value can also be used.
 #' ## 2. We inspect the k-NN distance plot for k = minPts - 1 = 4
-#' kNNdistplot(iris, k = 5 - 1)
+#' kNNdistplot(iris, minPts = 5)
 #'
 #' ## Noise seems to start around a 4-NN distance of .7
 #' abline(h=.7, col = "red", lty = 2)
@@ -217,7 +224,7 @@
 #' nn
 #' dbscan(nn, minPts = 2)
 #'
-#' @export dbscan
+#' @export
 dbscan <-
   function(x,
     eps,
@@ -228,12 +235,22 @@ dbscan <-
     if (inherits(x, "frNN") && missing(eps))
       eps <- x$eps
 
+    if (inherits(x, "dist")) {
+      .check_dist(x)
+      dist_method <- attr(x, "method")
+    } else
+      dist_method <- "euclidean"
+
+    if (is.null(dist_method))
+      dist_method <- "unknown"
+
     ### extra contains settings for frNN
     ### search = "kdtree", bucketSize = 10, splitRule = "suggest", approx = 0
-    ### also check for MinPts for fpc compartibility (does not work for
+    ### also check for MinPts for fpc compatibility (does not work for
     ### search method dist)
     extra <- list(...)
-    args <- c("MinPts", "search", "bucketSize", "splitRule", "approx")
+    args <-
+      c("MinPts", "search", "bucketSize", "splitRule", "approx")
     m <- pmatch(names(extra), args)
     if (any(is.na(m)))
       stop("Unknown parameter: ",
@@ -295,13 +312,13 @@ dbscan <-
 
     } else{
       if (!.matrixlike(x))
-        stop("x needs to be a matrix")
+        stop("x needs to be a matrix or data.frame.")
       ## make sure x is numeric
       x <- as.matrix(x)
       if (storage.mode(x) == "integer")
         storage.mode(x) <- "double"
       if (storage.mode(x) != "double")
-        stop("x has to be a numeric matrix.")
+        stop("all data in x has to be numeric.")
     }
 
     if (length(frNN) == 0 && any(is.na(x)))
@@ -338,15 +355,19 @@ dbscan <-
       frNN
     )
 
-    structure(list(
-      cluster = ret,
-      eps = eps,
-      minPts = minPts
-    ),
-      class = c("dbscan_fast", "dbscan"))
+    structure(
+      list(
+        cluster = ret,
+        eps = eps,
+        minPts = minPts,
+        dist = dist_method,
+        borderPoints = borderPoints
+      ),
+      class = c("dbscan_fast", "dbscan")
+    )
   }
 
-
+#' @export
 print.dbscan_fast <- function(x, ...) {
   cl <- unique(x$cluster)
   cl <- length(cl[cl != 0L])
@@ -354,6 +375,12 @@ print.dbscan_fast <- function(x, ...) {
   writeLines(c(
     paste0("DBSCAN clustering for ", length(x$cluster), " objects."),
     paste0("Parameters: eps = ", x$eps, ", minPts = ", x$minPts),
+    paste0(
+      "Using ",
+      x$dist,
+      " distances and borderpoints = ",
+      x$borderPoints
+    ),
     paste0(
       "The clustering contains ",
       cl,
@@ -373,5 +400,6 @@ print.dbscan_fast <- function(x, ...) {
 }
 
 #' @rdname dbscan
+#' @export
 is.corepoint <- function(x, eps, minPts = 5, ...)
-  sapply(frNN(x, eps = 0.5, ...)$id, length) >= (minPts - 1)
+  sapply(frNN(x, eps = eps, ...)$id, length) >= (minPts - 1)

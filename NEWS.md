@@ -1,3 +1,20 @@
+# dbscan 1.1-11 (2022-10-26)
+
+## New Features
+* kNNdistplot gained parameter minPts.
+* dbscan now retains information on distance method and border points.
+* HDBSCAN now supports long vectors to work with larger distance matrices. 
+* conversion from dist to kNN and frNN is now more memory efficient. It does no longer 
+  coerce the dist object into a matrix of double the size, but extract the distances directly
+  from the dist object.
+* Better description of how predict uses only Euclidean distances and more error checking.
+* The package now exports a new generic for as.dendrogram().
+
+## Bugfix
+* is.corepoint() now uses the correct epsilon value (reported by Eng Aun).
+* functions now check for cluster::dissimilariy objects which have class dist 
+  but missing attributes.
+
 # dbscan 1.1-10 (2022-01-14)
 
 ## New Features
@@ -5,7 +22,7 @@
 * coredist() and mrdist() for HDBSCAN.
 * find connected components with comps().
 
-# Changes
+## Changes
 * reachability plot now shows all undefined distances as a dashed line.
 
 ## Bugfix
