@@ -1,3 +1,10 @@
+# dbscan 1.1-12 (2023-11-28)
+
+## Bugfix
+* point_density checks now for missing values (reported by soelderer)
+* Removed C++11 specification.
+* ANN.cpp: fixed Rprintf warning.
+
 # dbscan 1.1-11 (2022-10-26)
 
 ## New Features
