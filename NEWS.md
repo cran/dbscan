@@ -1,7 +1,24 @@
+# dbscan 1.2-0 (2024-06-28)
+
+## New Features
+* dbscan has now tidymodels tidiers (glance, tidy, augment).
+* kNNdistplot can now plot a range of k/minPts values.
+* added stats::nobs methods for the clusterings.
+* kNN and frNN now contains the used distance metric.
+
+## Changes
+* dbscan component dist was renamed to metric. 
+* Removed redundant sort in kNNdistplot (reported by Natasza Szczypien).
+* Refactoring use more performant anyNA(x) instead of any(is.na(x))
+  and many more (by m-muecke).
+* Reorganized the C++ source code.
+* README now uses bibtex.
+* Tests use now testthat edition 3 (m-muecke).
+
 # dbscan 1.1-12 (2023-11-28)
 
 ## Bugfix
-* point_density checks now for missing values (reported by soelderer)
+* point_density checks now for missing values (reported by soelderer).
 * Removed C++11 specification.
 * ANN.cpp: fixed Rprintf warning.
 

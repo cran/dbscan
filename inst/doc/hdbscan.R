@@ -18,7 +18,7 @@ plot(cl$hc, main="HDBSCAN* Hierarchy")
 
 ## -----------------------------------------------------------------------------
 cl <- hdbscan(moons, minPts = 5)
-check <- rep(F, nrow(moons)-1)
+check <- rep(FALSE, nrow(moons)-1)
 core_dist <- kNNdist(moons, k=5-1)
 
 ## cutree doesn't distinguish noise as 0, so we make a new method to do it manually 
@@ -28,15 +28,15 @@ cut_tree <- function(hcl, eps, core_dist){
   cuts
 }
 
-eps_values <- sort(cl$hc$height, decreasing = T)+.Machine$double.eps ## Machine eps for consistency between cuts 
+eps_values <- sort(cl$hc$height, decreasing = TRUE)+.Machine$double.eps ## Machine eps for consistency between cuts
 for (i in 1:length(eps_values)) { 
   cut_cl <- cut_tree(cl$hc, eps_values[i], core_dist)
-  dbscan_cl <- dbscan(moons, eps = eps_values[i], minPts = 5, borderPoints = F) # DBSCAN* doesn't include border points
+  dbscan_cl <- dbscan(moons, eps = eps_values[i], minPts = 5, borderPoints = FALSE) # DBSCAN* doesn't include border points
   
   ## Use run length encoding as an ID-independent way to check ordering
   check[i] <- (all.equal(rle(cut_cl)$lengths, rle(dbscan_cl$cluster)$lengths) == "TRUE")
 }
-print(all(check == T))
+print(all(check == TRUE))
 
 ## -----------------------------------------------------------------------------
  plot(cl)
@@ -48,7 +48,7 @@ print(all(check == T))
 plot(cl, gradient = c("purple", "blue", "green", "yellow"), scale=1.5)
 
 ## -----------------------------------------------------------------------------
-plot(cl, gradient = c("purple", "blue", "green", "yellow"), show_flat = T)
+plot(cl, gradient = c("purple", "blue", "green", "yellow"), show_flat = TRUE)
 
 ## -----------------------------------------------------------------------------
 print(cl$cluster_scores)
@@ -63,7 +63,7 @@ print(cl$cluster_scores)
   points(moons, col=colors, pch=20)
 
 ## -----------------------------------------------------------------------------
-  top_outliers <- order(cl$outlier_scores, decreasing = T)[1:10]
+  top_outliers <- order(cl$outlier_scores, decreasing = TRUE)[1:10]
   colors <- mapply(function(col, i) adjustcolor(col, alpha.f = cl$outlier_scores[i]), 
                    palette()[cl$cluster+1], seq_along(cl$cluster))
   plot(moons, col=colors, pch=20)
@@ -87,5 +87,5 @@ cl2
   points(DS3, col=colors, pch=20)
 
 ## -----------------------------------------------------------------------------
-  plot(cl2, scale = 3, gradient = c("purple", "orange", "red"), show_flat = T)
+  plot(cl2, scale = 3, gradient = c("purple", "orange", "red"), show_flat = TRUE)
 

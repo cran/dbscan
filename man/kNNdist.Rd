@@ -13,7 +13,8 @@ kNNdistplot(x, k, minPts, ...)
 \item{x}{the data set as a matrix of points (Euclidean distance is used) or
 a precalculated \link{dist} object.}
 
-\item{k}{number of nearest neighbors used for the distance calculation.}
+\item{k}{number of nearest neighbors used for the distance calculation. For
+\code{kNNdistplot()} also a range of values for \code{k} or \code{minPts} can be specified.}
 
 \item{all}{should a matrix with the distances to all k nearest neighbors be
 returned?}
@@ -35,7 +36,7 @@ Fast calculation of the k-nearest neighbor distances for a dataset
 represented as a matrix of points. The kNN distance is defined as the
 distance from a point to its k nearest neighbor. The kNN distance plot
 displays the kNN distance of all points sorted from smallest to largest. The
-plot can be used to help find suitable parameter values for \code{dbscan()}.
+plot can be used to help find suitable parameter values for \code{\link[=dbscan]{dbscan()}}.
 }
 \examples{
 data(iris)
@@ -52,6 +53,10 @@ kNNdist(iris, k = 4, all = TRUE)
 ## DBSCAN with MinPts = 5. Use k = 4 (= MinPts -1).
 ## The knee is visible around a distance of .7
 kNNdistplot(iris, k = 4)
+
+## Look at all k-NN distance plots for a k of 1 to 10
+## Note that k-NN distances are increasing in k
+kNNdistplot(iris, k = 1:20)
 
 cl <- dbscan(iris, eps = .7, minPts = 5)
 pairs(iris, col = cl$cluster + 1L)

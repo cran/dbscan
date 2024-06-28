@@ -178,7 +178,6 @@ hdbscan <- function(x,
   ## Generate membership 'probabilities' using core distance as the measure of density
   prob <- rep(0, length(cl))
   for (cid in sl) {
-    ccl <- res[[as.character(cid)]]
     max_f <- max(coredist[which(cl == cid)])
     pr <- (max_f - coredist[which(cl == cid)]) / max_f
     prob[cl == cid] <- pr
@@ -250,7 +249,7 @@ print.hdbscan <- function(x, ...) {
   print(table(x$cluster))
   cat("\n")
   writeLines(strwrap(paste0(
-    "Available fields: ", paste(names(x), collapse = ", ")
+    "Available fields: ", toString(names(x))
   ), exdent = 18))
 }
 
@@ -302,7 +301,7 @@ plot.hdbscan <-
 
       ## widths == number of points in the cluster at each eps it was alive
       widths <-
-        sapply(sort(hd_info[[cl_key]]$eps, decreasing = T), function(eps)
+        sapply(sort(hd_info[[cl_key]]$eps, decreasing = TRUE), function(eps)
           length(which(hd_info[[cl_key]]$eps <= eps)))
       if (length(widths) > 0) {
         widths <-
@@ -332,7 +331,7 @@ plot.hdbscan <-
         ytop <- rep(parent_height, length(widths))
         ybottom <-
           c(
-            sort(hd_info[[cl_key]]$eps, decreasing = T),
+            sort(hd_info[[cl_key]]$eps, decreasing = TRUE),
             rep(hd_info[[cl_key]]$eps_death, hd_info[[cl_key]]$n_children)
           )
       }
@@ -443,6 +442,7 @@ mrdist <- function(x, minPts, coredist = NULL) {
   attr(mr_dist, "Size") <- attr(x_dist, "Size")
   attr(mr_dist, "Diag") <- FALSE
   attr(mr_dist, "Upper") <- FALSE
-  attr(mr_dist, "method") <- "mutual reachability"
+  attr(mr_dist, "method") <- paste0("mutual reachability (",
+                                    attr(x_dist, "method"),")")
   mr_dist
 }

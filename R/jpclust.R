@@ -21,7 +21,7 @@
 #'
 #' Fast C++ implementation of the Jarvis-Patrick clustering which first builds
 #' a shared nearest neighbor graph (k nearest neighbor sparsification) and then
-#' places two points in the same cluster if they are in each other's nearest
+#' places two points in the same cluster if they are in each others nearest
 #' neighbor list and they share at least kt nearest neighbors.
 #'
 #' Following the original paper, the shared nearest neighbor list is
@@ -49,6 +49,7 @@
 #' \item{cluster }{A integer vector with cluster assignments. Zero
 #' indicates noise points.}
 #' \item{type }{ name of used clustering algorithm.}
+#' \item{metric }{ the distance metric used for clustering.}
 #' \item{param }{ list of used clustering parameters. }
 #'
 #' @author Michael Hahsler
@@ -87,30 +88,28 @@
 #' @export
 jpclust <- function(x, k, kt, ...) {
   # Create NN graph
-  if (inherits(x, "kNN")) {
-    if (missing(k))
-      k <- nn$k
-    nn <- x$id[, 1:k]
-  } else {
-    nn <- kNN(x, k, sort = FALSE, ...)$id
-  }
-
+  if (missing(k) && inherits(x, "kNN"))
+      k <- x$k
   if (length(kt) != 1 || kt < 1 || kt > k)
     stop("kt needs to be a threshold in range [1, k].")
 
+  nn <- kNN(x, k, sort = FALSE, ...)
+
   # Perform clustering
-  cl <- JP_int(nn, kt = as.integer(kt))
+  cl <- JP_int(nn$id, kt = as.integer(kt))
 
   structure(
     list(
       cluster = as.integer(factor(cl)),
       type = "Jarvis-Patrick clustering",
+      metric = nn$metric,
       param = list(k = k, kt = kt)
     ),
     class = c("general_clustering")
   )
 }
 
+#' @export
 print.general_clustering <- function(x, ...) {
   cl <- unique(x$cluster)
   cl <- length(cl[cl != 0L])
@@ -121,7 +120,7 @@ print.general_clustering <- function(x, ...) {
       paste(
         names(x$param),
         unlist(x$param),
-        sep = "=",
+        sep = " = ",
         collapse = ", "
       )),
     paste0(
@@ -138,6 +137,6 @@ print.general_clustering <- function(x, ...) {
 
   writeLines(strwrap(paste0(
     "Available fields: ",
-    paste(names(x), collapse = ", ")
+    toString(names(x))
   ), exdent = 18))
 }

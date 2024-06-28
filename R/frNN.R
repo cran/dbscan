@@ -65,6 +65,7 @@
 #' \item{dist }{a list with distances (same structure as
 #' `id`). }
 #' \item{eps }{ neighborhood radius `eps` that was used. }
+#' \item{metric }{ used distance metric. }
 #'
 #' `adjacencylist()` returns a list with one entry per data point in `x`. Each entry
 #' contains the id of the nearest neighbors.
@@ -81,9 +82,10 @@
 #'
 #' # Example 1: Find fixed radius nearest neighbors for each point
 #' nn <- frNN(x, eps = .5)
+#' nn
 #'
 #' # Number of neighbors
-#' hist(sapply(adjacencylist(nn), length),
+#' hist(lengths(adjacencylist(nn)),
 #'   xlab = "k", main="Number of Neighbors",
 #'   sub = paste("Neighborhood size eps =", nn$eps))
 #'
@@ -151,7 +153,7 @@ frNN <-
       if (!is.null(query))
         stop("query can only be used if x contains the data.")
 
-      if (any(is.na(x)))
+      if (anyNA(x))
         stop("data/distances cannot contain NAs for frNN (with kd-tree)!")
 
       return(dist_to_frNN(x, eps = eps, sort = sort))
@@ -178,7 +180,7 @@ frNN <-
         stop("x and query need to have the same number of columns!")
     }
 
-    if (any(is.na(x)))
+    if (anyNA(x))
       stop("data/distances cannot contain NAs for frNN (with kd-tree)!")
 
     ## returns NO self matches
@@ -195,6 +197,7 @@ frNN <-
         )
       names(ret$dist) <- rownames(query)
       names(ret$id) <- rownames(query)
+      ret$metric = "euclidean"
     } else{
       ret <- frNN_int(
         as.matrix(x),
@@ -206,6 +209,7 @@ frNN <-
       )
       names(ret$dist) <- rownames(x)
       names(ret$id) <- rownames(x)
+      ret$metric = "euclidean"
     }
 
     ret$eps <- eps
@@ -261,6 +265,7 @@ dist_to_frNN <- function(x, eps, sort = FALSE) {
       dist = d,
       id = id,
       eps = eps,
+      metric = attr(x, "method"),
       sort = FALSE
     ),
       class = c("frNN", "NN"))
@@ -274,7 +279,7 @@ dist_to_frNN <- function(x, eps, sort = FALSE) {
 #' @rdname frNN
 #' @export
 sort.frNN <- function(x, decreasing = FALSE, ...) {
-  if (!is.null(x$sort) && x$sort)
+  if (isTRUE(x$sort))
     return(x)
   if (is.null(x$dist))
     stop("Unable to sort. Distances are missing.")
@@ -325,5 +330,7 @@ print.frNN <- function(x, ...) {
     "\n",
     sep = ""
   )
-  cat("Available fields: ", paste(names(x), collapse = ", "), "\n", sep = "")
+
+  cat("Distance metric:", x$metric, "\n")
+  cat("\nAvailable fields: ", toString(names(x)), "\n", sep = "")
 }

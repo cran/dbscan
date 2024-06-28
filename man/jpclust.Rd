@@ -27,12 +27,13 @@ components:
 \item{cluster }{A integer vector with cluster assignments. Zero
 indicates noise points.}
 \item{type }{ name of used clustering algorithm.}
+\item{metric }{ the distance metric used for clustering.}
 \item{param }{ list of used clustering parameters. }
 }
 \description{
 Fast C++ implementation of the Jarvis-Patrick clustering which first builds
 a shared nearest neighbor graph (k nearest neighbor sparsification) and then
-places two points in the same cluster if they are in each other's nearest
+places two points in the same cluster if they are in each others nearest
 neighbor list and they share at least kt nearest neighbors.
 }
 \details{

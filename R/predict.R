@@ -22,9 +22,10 @@
 #' @param data the data set used to create the clustering object.
 #' @param newdata new data points for which the cluster membership should be
 #' predicted.
+#' @importFrom stats predict
 #' @export
 predict.dbscan_fast <- function (object, newdata, data, ...) {
-  if (object$dist != "euclidean")
+  if (object$metric != "euclidean")
     warning("dbscan used non-Euclidean distances, predict assigns new points using Euclidean distances!")
   .predict_frNN(newdata, data, object$cluster, object$eps, ...)
 }
@@ -78,16 +79,14 @@ predict.hdbscan <- function(object, newdata, data, ...) {
     stop("clustering does not agree with the number of data points in data.")
 
   if (is.data.frame(data)) {
-    indx <- sapply(data, is.factor)
+    indx <- vapply(data, is.factor, logical(1L))
     if (any(indx)) {
       warning(
         "data contains factors! The factors are converted to numbers and euclidean distances are used"
       )
     }
-    data[indx] <- lapply(data[indx], function(x)
-      as.numeric(x))
-    newdata[indx] <- lapply(newdata[indx], function(x)
-      as.numeric(x))
+    data[indx] <- lapply(data[indx], as.numeric)
+    newdata[indx] <- lapply(newdata[indx], as.numeric)
   }
 
   # don't use noise
@@ -101,10 +100,7 @@ predict.hdbscan <- function(object, newdata, data, ...) {
     sort = TRUE,
     ...)
 
-  sapply(nn$id, function(nns) {
-    if (length(nns) == 0)
-      0L
-    else
-      clusters[nns[1]]
-  })
+  vapply(
+    nn$id, function(nns) if (length(nns) == 0L) 0L else clusters[nns[1L]], integer(1L)
+  )
 }

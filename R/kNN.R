@@ -79,6 +79,7 @@
 #' \item{dist }{a matrix with distances. }
 #' \item{id }{a matrix with `ids`. }
 #' \item{k }{number `k` used. }
+#' \item{metric }{ used distance metric. }
 #'
 #' @author Michael Hahsler
 #' @references David M. Mount and Sunil Arya (2010). ANN: A Library for
@@ -160,7 +161,7 @@ kNN <-
       if (!is.null(query))
         stop("query can only be used if x contains a data matrix.")
 
-      if (any(is.na(x)))
+      if (anyNA(x))
         stop("distances cannot be NAs for kNN!")
 
       return(dist_to_kNN(x, k = k))
@@ -189,7 +190,7 @@ kNN <-
       stop("Not enough neighbors in data set!")
 
 
-    if (any(is.na(x)))
+    if (anyNA(x))
       stop("data/distances cannot contain NAs for kNN (with kd-tree)!")
 
     ## returns NO self matches
@@ -223,6 +224,8 @@ kNN <-
     ### ANN already returns them sorted (by dist but not by ID)
     if (sort)
       ret <- sort(ret)
+
+    ret$metric = "euclidean"
 
     ret
   }
@@ -266,7 +269,8 @@ dist_to_kNN <- function(x, k) {
       dist = d,
       id = id,
       k = k,
-      sort = TRUE
+      sort = TRUE,
+      metric = attr(x, "method")
     ),
       class = c("kNN", "NN"))
 
@@ -276,7 +280,7 @@ dist_to_kNN <- function(x, k) {
 #' @rdname kNN
 #' @export
 sort.kNN <- function(x, decreasing = FALSE, ...) {
-  if (!is.null(x$sort) && x$sort)
+  if (isTRUE(x$sort))
     return(x)
   if (is.null(x$dist))
     stop("Unable to sort. Distances are missing.")
@@ -323,7 +327,8 @@ print.kNN <- function(x, ...) {
     ").",
     "\n",
     sep = "")
-  cat("Available fields: ", paste(names(x), collapse = ", "), "\n", sep = "")
+  cat("Distance metric:", x$metric, "\n")
+  cat("\nAvailable fields: ", toString(names(x)), "\n", sep = "")
 }
 
 # Convert names to integers for C++

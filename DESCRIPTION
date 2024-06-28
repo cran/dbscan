@@ -1,10 +1,11 @@
 Package: dbscan
-Version: 1.1-12
-Date: 2023-11-28
+Version: 1.2-0
+Date: 2024-06-28
 Title: Density-Based Spatial Clustering of Applications with Noise
         (DBSCAN) and Related Algorithms
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
-                email = "mhahsler@lyle.smu.edu"),
+                email = "mhahsler@lyle.smu.edu",
+                comment = c(ORCID = "0000-0003-2716-1405")),
 	    person("Matthew", "Piekenbrock", role = c("aut", "cph")),
 	    person("Sunil", "Arya", role = c("ctb", "cph")),
 	    person("David", "Mount", role = c("ctb", "cph")))
@@ -18,10 +19,11 @@ Description: A fast reimplementation of several density-based algorithms of
     structure (from library ANN) for faster k-nearest neighbor search. An R 
     interface to fast kNN and fixed-radius NN search is also provided. 
     Hahsler, Piekenbrock and Doran (2019) <doi:10.18637/jss.v091.i01>.
-Imports: Rcpp (>= 1.0.0), graphics, stats
+Depends: R (>= 3.2.0)
+Imports: Rcpp (>= 1.0.0), graphics, stats, generics
 LinkingTo: Rcpp
-Suggests: fpc, microbenchmark, testthat, dendextend, igraph, knitr,
-        rmarkdown
+Suggests: fpc, microbenchmark, testthat (>= 3.0.0), dendextend, igraph,
+        knitr, rmarkdown, tibble, rlang
 VignetteBuilder: knitr
 URL: https://github.com/mhahsler/dbscan
 BugReports: https://github.com/mhahsler/dbscan/issues
@@ -29,14 +31,16 @@ License: GPL (>= 2)
 Copyright: ANN library is copyright by University of Maryland, Sunil
         Arya and David Mount. All other code is copyright by Michael
         Hahsler and Matthew Piekenbrock.
+Config/testthat/edition: 3
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 NeedsCompilation: yes
-Packaged: 2023-11-28 14:45:10 UTC; hahsler
-Author: Michael Hahsler [aut, cre, cph],
+Packaged: 2024-06-28 20:29:16 UTC; hahsler
+Author: Michael Hahsler [aut, cre, cph]
+    (<https://orcid.org/0000-0003-2716-1405>),
   Matthew Piekenbrock [aut, cph],
   Sunil Arya [ctb, cph],
   David Mount [ctb, cph]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2023-11-28 17:10:05 UTC
+Date/Publication: 2024-06-28 21:40:06 UTC

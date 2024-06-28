@@ -23,14 +23,15 @@
 #' represented as a matrix of points. The kNN distance is defined as the
 #' distance from a point to its k nearest neighbor. The kNN distance plot
 #' displays the kNN distance of all points sorted from smallest to largest. The
-#' plot can be used to help find suitable parameter values for `dbscan()`.
+#' plot can be used to help find suitable parameter values for [dbscan()].
 #'
 #' @family Outlier Detection Functions
 #' @family NN functions
 #'
 #' @param x the data set as a matrix of points (Euclidean distance is used) or
 #' a precalculated [dist] object.
-#' @param k number of nearest neighbors used for the distance calculation.
+#' @param k number of nearest neighbors used for the distance calculation. For
+#' `kNNdistplot()` also a range of values for `k` or `minPts` can be specified.
 #' @param minPts to use a k-NN plot to determine a suitable `eps` value for [dbscan()],
 #'    `minPts` used in dbscan can be specified and will set `k = minPts - 1`.
 #' @param all should a matrix with the distances to all k nearest neighbors be
@@ -61,6 +62,10 @@
 #' ## The knee is visible around a distance of .7
 #' kNNdistplot(iris, k = 4)
 #'
+#' ## Look at all k-NN distance plots for a k of 1 to 10
+#' ## Note that k-NN distances are increasing in k
+#' kNNdistplot(iris, k = 1:20)
+#'
 #' cl <- dbscan(iris, eps = .7, minPts = 5)
 #' pairs(iris, col = cl$cluster + 1L)
 #' ## Note: black points are noise points
@@ -81,11 +86,20 @@ kNNdistplot <- function(x, k, minPts, ...) {
   if (missing(k))
     k <- minPts - 1
 
+  if (length(k) == 1) {
   kNNdist <- sort(kNNdist(x, k, ...))
   plot(
-    sort(kNNdist),
+    kNNdist,
     type = "l",
-    ylab = paste(k, "-NN distance", sep = ""),
-    xlab = "Points (sample) sorted by distance"
+    ylab = paste0(k, "-NN distance"),
+    xlab = "Points sorted by distance"
   )
+
+  } else {
+    knnds <- vapply(k, function(i) sort(kNNdist(x, i, ...)), numeric(nrow(x)))
+
+    matplot(knnds, type = "l", lty = 1,
+            ylab = paste0("k-NN distance"),
+            xlab = "Points sorted by distance")
+  }
 }
