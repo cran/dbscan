@@ -9,6 +9,62 @@ SNN_sim_int <- function(nn, jp) {
     .Call(`_dbscan_SNN_sim_int`, nn, jp)
 }
 
+ANN_cleanup <- function() {
+    invisible(.Call(`_dbscan_ANN_cleanup`))
+}
+
+comps_kNN <- function(nn, mutual) {
+    .Call(`_dbscan_comps_kNN`, nn, mutual)
+}
+
+comps_frNN <- function(nn, mutual) {
+    .Call(`_dbscan_comps_frNN`, nn, mutual)
+}
+
+intToStr <- function(iv) {
+    .Call(`_dbscan_intToStr`, iv)
+}
+
+dist_subset <- function(dist, idx) {
+    .Call(`_dbscan_dist_subset`, dist, idx)
+}
+
+XOR <- function(lhs, rhs) {
+    .Call(`_dbscan_XOR`, lhs, rhs)
+}
+
+dspc <- function(cl_idx, internal_nodes, all_cl_ids, mrd_dist) {
+    .Call(`_dbscan_dspc`, cl_idx, internal_nodes, all_cl_ids, mrd_dist)
+}
+
+dbscan_int <- function(data, eps, minPts, weights, borderPoints, type, bucketSize, splitRule, approx, frNN) {
+    .Call(`_dbscan_dbscan_int`, data, eps, minPts, weights, borderPoints, type, bucketSize, splitRule, approx, frNN)
+}
+
+reach_to_dendrogram <- function(reachability, pl_order) {
+    .Call(`_dbscan_reach_to_dendrogram`, reachability, pl_order)
+}
+
+dendrogram_to_reach <- function(x) {
+    .Call(`_dbscan_dendrogram_to_reach`, x)
+}
+
+mst_to_dendrogram <- function(mst) {
+    .Call(`_dbscan_mst_to_dendrogram`, mst)
+}
+
+dbscan_density_int <- function(data, eps, type, bucketSize, splitRule, approx) {
+    .Call(`_dbscan_dbscan_density_int`, data, eps, type, bucketSize, splitRule, approx)
+}
+
+frNN_int <- function(data, eps, type, bucketSize, splitRule, approx) {
+    .Call(`_dbscan_frNN_int`, data, eps, type, bucketSize, splitRule, approx)
+}
+
+frNN_query_int <- function(data, query, eps, type, bucketSize, splitRule, approx) {
+    .Call(`_dbscan_frNN_query_int`, data, query, eps, type, bucketSize, splitRule, approx)
+}
+
 distToAdjacency <- function(constraints, N) {
     .Call(`_dbscan_distToAdjacency`, constraints, N)
 }
@@ -41,64 +97,24 @@ computeVirtualNode <- function(noise, constraints) {
     .Call(`_dbscan_computeVirtualNode`, noise, constraints)
 }
 
-fosc <- function(cl_tree, cid, sc, cl_hierarchy, prune_unstable_leaves = FALSE, alpha = 0, useVirtual = FALSE, n_constraints = 0L, constraints = NULL) {
-    .Call(`_dbscan_fosc`, cl_tree, cid, sc, cl_hierarchy, prune_unstable_leaves, alpha, useVirtual, n_constraints, constraints)
+fosc <- function(cl_tree, cid, sc, cl_hierarchy, prune_unstable_leaves = FALSE, cluster_selection_epsilon = 0.0, alpha = 0, useVirtual = FALSE, n_constraints = 0L, constraints = NULL) {
+    .Call(`_dbscan_fosc`, cl_tree, cid, sc, cl_hierarchy, prune_unstable_leaves, cluster_selection_epsilon, alpha, useVirtual, n_constraints, constraints)
 }
 
-extractUnsupervised <- function(cl_tree, prune_unstable = FALSE) {
-    .Call(`_dbscan_extractUnsupervised`, cl_tree, prune_unstable)
+extractUnsupervised <- function(cl_tree, prune_unstable = FALSE, cluster_selection_epsilon = 0.0) {
+    .Call(`_dbscan_extractUnsupervised`, cl_tree, prune_unstable, cluster_selection_epsilon)
 }
 
-extractSemiSupervised <- function(cl_tree, constraints, alpha = 0, prune_unstable_leaves = FALSE) {
-    .Call(`_dbscan_extractSemiSupervised`, cl_tree, constraints, alpha, prune_unstable_leaves)
-}
-
-ANN_cleanup <- function() {
-    invisible(.Call(`_dbscan_ANN_cleanup`))
-}
-
-comps_kNN <- function(nn, mutual) {
-    .Call(`_dbscan_comps_kNN`, nn, mutual)
-}
-
-comps_frNN <- function(nn, mutual) {
-    .Call(`_dbscan_comps_frNN`, nn, mutual)
-}
-
-dbscan_int <- function(data, eps, minPts, weights, borderPoints, type, bucketSize, splitRule, approx, frNN) {
-    .Call(`_dbscan_dbscan_int`, data, eps, minPts, weights, borderPoints, type, bucketSize, splitRule, approx, frNN)
-}
-
-reach_to_dendrogram <- function(reachability, pl_order) {
-    .Call(`_dbscan_reach_to_dendrogram`, reachability, pl_order)
-}
-
-dendrogram_to_reach <- function(x) {
-    .Call(`_dbscan_dendrogram_to_reach`, x)
-}
-
-mst_to_dendrogram <- function(mst) {
-    .Call(`_dbscan_mst_to_dendrogram`, mst)
-}
-
-dbscan_density_int <- function(data, eps, type, bucketSize, splitRule, approx) {
-    .Call(`_dbscan_dbscan_density_int`, data, eps, type, bucketSize, splitRule, approx)
-}
-
-frNN_int <- function(data, eps, type, bucketSize, splitRule, approx) {
-    .Call(`_dbscan_frNN_int`, data, eps, type, bucketSize, splitRule, approx)
-}
-
-frNN_query_int <- function(data, query, eps, type, bucketSize, splitRule, approx) {
-    .Call(`_dbscan_frNN_query_int`, data, query, eps, type, bucketSize, splitRule, approx)
-}
-
-kNN_int <- function(data, k, type, bucketSize, splitRule, approx) {
-    .Call(`_dbscan_kNN_int`, data, k, type, bucketSize, splitRule, approx)
+extractSemiSupervised <- function(cl_tree, constraints, alpha = 0, prune_unstable_leaves = FALSE, cluster_selection_epsilon = 0.0) {
+    .Call(`_dbscan_extractSemiSupervised`, cl_tree, constraints, alpha, prune_unstable_leaves, cluster_selection_epsilon)
 }
 
 kNN_query_int <- function(data, query, k, type, bucketSize, splitRule, approx) {
     .Call(`_dbscan_kNN_query_int`, data, query, k, type, bucketSize, splitRule, approx)
+}
+
+kNN_int <- function(data, k, type, bucketSize, splitRule, approx) {
+    .Call(`_dbscan_kNN_int`, data, k, type, bucketSize, splitRule, approx)
 }
 
 lof_kNN <- function(data, minPts, type, bucketSize, splitRule, approx) {
@@ -109,24 +125,16 @@ mrd <- function(dm, cd) {
     .Call(`_dbscan_mrd`, dm, cd)
 }
 
-optics_int <- function(data, eps, minPts, type, bucketSize, splitRule, approx, frNN) {
-    .Call(`_dbscan_optics_int`, data, eps, minPts, type, bucketSize, splitRule, approx, frNN)
-}
-
-coreFromDist <- function(dist, n, minPts) {
-    .Call(`_dbscan_coreFromDist`, dist, n, minPts)
-}
-
-prims <- function(x_dist, n) {
-    .Call(`_dbscan_prims`, x_dist, n)
-}
-
-order_ <- function(x) {
-    .Call(`_dbscan_order_`, x)
+mst <- function(x_dist, n) {
+    .Call(`_dbscan_mst`, x_dist, n)
 }
 
 hclustMergeOrder <- function(mst, o) {
     .Call(`_dbscan_hclustMergeOrder`, mst, o)
+}
+
+optics_int <- function(data, eps, minPts, type, bucketSize, splitRule, approx, frNN) {
+    .Call(`_dbscan_optics_int`, data, eps, minPts, type, bucketSize, splitRule, approx, frNN)
 }
 
 lowerTri <- function(m) {

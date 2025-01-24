@@ -60,7 +60,7 @@
 #' `frNN()` returns an object of class [frNN] (subclass of
 #' [NN]) containing a list with the following components:
 #' \item{id }{a list of
-#' integer vectors. Each vector contains the ids of the fixed radius nearest
+#' integer vectors. Each vector contains the ids (row numbers) of the fixed radius nearest
 #' neighbors. }
 #' \item{dist }{a list with distances (same structure as
 #' `id`). }
@@ -93,7 +93,7 @@
 #' i <- 10
 #' nn$id[[i]]
 #' nn$dist[[i]]
-#' plot(x, col = ifelse(1:nrow(iris) %in% nn$id[[i]], "red", "black"))
+#' plot(x, col = ifelse(seq_len(nrow(iris)) %in% nn$id[[i]], "red", "black"))
 #'
 #' # get an adjacency list
 #' head(adjacencylist(nn))
@@ -126,7 +126,7 @@ frNN <-
       if (x$eps < eps)
         stop("frNN in x has not a sufficient eps radius.")
 
-      for (i in 1:length(x$dist)) {
+      for (i in seq_along(x$dist)) {
         take <- x$dist[[i]] <= eps
         x$dist[[i]] <- x$dist[[i]][take]
         x$id[[i]] <- x$id[[i]][take]
@@ -140,10 +140,9 @@ frNN <-
     splitRule <- .parse_splitRule(splitRule)
 
     ### dist search
-    if (search == 3) {
-      if (!inherits(x, "dist"))
-        if (.matrixlike(x))
-          x <- dist(x)
+    if (search == 3 && !inherits(x, "dist")) {
+      if (.matrixlike(x))
+        x <- dist(x)
       else
         stop("x needs to be a matrix to calculate distances")
     }
@@ -197,8 +196,8 @@ frNN <-
         )
       names(ret$dist) <- rownames(query)
       names(ret$id) <- rownames(query)
-      ret$metric = "euclidean"
-    } else{
+      ret$metric <- "euclidean"
+    } else {
       ret <- frNN_int(
         as.matrix(x),
         as.double(eps),
@@ -209,7 +208,7 @@ frNN <-
       )
       names(ret$dist) <- rownames(x)
       names(ret$id) <- rownames(x)
-      ret$metric = "euclidean"
+      ret$metric <- "euclidean"
     }
 
     ret$eps <- eps
@@ -288,19 +287,19 @@ sort.frNN <- function(x, decreasing = FALSE, ...) {
   n <- names(x$id)
 
   o <- lapply(
-    1:length(x$dist),
+    seq_along(x$dist),
     FUN =
       function(i)
         order(x$dist[[i]], x$id[[i]], decreasing = decreasing)
   )
   x$dist <-
     lapply(
-      1:length(o),
+      seq_along(o),
       FUN = function(p)
         x$dist[[p]][o[[p]]]
     )
   x$id <- lapply(
-    1:length(o),
+    seq_along(o),
     FUN = function(p)
       x$id[[p]][o[[p]]]
   )

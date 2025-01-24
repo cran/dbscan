@@ -1,3 +1,22 @@
+# dbscan 1.2.1 (2025-01-23)
+
+## Changes
+* Various refactoring by m-muecke
+
+## New Features
+* HDBSCAN gained parameter cluster_selection_epsilon to implement 
+  clusters selected from Malzer and Baum (2020).
+* Functions ncluster() and nnoise() were added.
+* hullplot now() marks noise as x.
+* Added clplot().
+* pointdensity now also accepts a dist object as input and has the new type
+  "gaussian" to calculate a Gaussian kernel estimate.
+* Added the DBCV index.
+
+## Bugfixes
+* extractFOCS: Fixed total_score.
+* Rewrote minimal spanning tree code.
+
 # dbscan 1.2-0 (2024-06-28)
 
 ## New Features
@@ -9,7 +28,7 @@
 ## Changes
 * dbscan component dist was renamed to metric. 
 * Removed redundant sort in kNNdistplot (reported by Natasza Szczypien).
-* Refactoring use more performant anyNA(x) instead of any(is.na(x))
+* Refactoring use anyNA(x) instead of any(is.na(x))
   and many more (by m-muecke).
 * Reorganized the C++ source code.
 * README now uses bibtex.
@@ -17,7 +36,7 @@
 
 # dbscan 1.1-12 (2023-11-28)
 
-## Bugfix
+## Bugfixes
 * point_density checks now for missing values (reported by soelderer).
 * Removed C++11 specification.
 * ANN.cpp: fixed Rprintf warning.
@@ -34,7 +53,7 @@
 * Better description of how predict uses only Euclidean distances and more error checking.
 * The package now exports a new generic for as.dendrogram().
 
-## Bugfix
+## Bugfixes
 * is.corepoint() now uses the correct epsilon value (reported by Eng Aun).
 * functions now check for cluster::dissimilariy objects which have class dist 
   but missing attributes.
@@ -49,7 +68,7 @@
 ## Changes
 * reachability plot now shows all undefined distances as a dashed line.
 
-## Bugfix
+## Bugfixes
 * memory leak in mrd calculation fixed.
 
 # dbscan 1.1-9 (2022-01-10)
@@ -109,7 +128,7 @@
 
 # dbscan 1.1-3 (2018-11-12)
 
-## Bugfix
+## Bugfixes
 * pointdensity was double counting the query point (reported by Marius Hofert).
 
 # dbscan 1.1-2 (2018-05-18)
@@ -117,13 +136,13 @@
 ## New Features
 * OPTICS now calculates eps if it is omitted.
 
-## Bugfix
+## Bugfixes
 * Example now only uses igraph conditionally since it is unavailable 
   on Solaris (reported by B. Ripley).
 
 # dbscan 1.1-1 (2017-03-19)
 
-## Bugfix
+## Bugfixes
 
 * Fixed problem with constant name on Solaris in ANN code (reported by B. Ripley).
 

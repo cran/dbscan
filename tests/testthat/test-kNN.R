@@ -10,7 +10,7 @@ test_that("kNN", {
   ## no duplicates first! All distances should be unique
   x <- x[!duplicated(x),]
 
-  rownames(x) <- paste0("Object_", 1:nrow(x))
+  rownames(x) <- paste0("Object_", seq_len(nrow(x)))
 
   k <- 5L
   nn <- kNN(x, k=k, sort = TRUE)
@@ -64,8 +64,8 @@ test_that("kNN", {
   ## the order is not stable with matching distances which means that the
   ## k-NN are not stable. We add 100 copied points to check if self match
   ## filtering and sort works
-  x <- rbind(x, x[sample(1:nrow(x), 100),])
-  rownames(x) <- paste0("Object_", 1:nrow(x))
+  x <- rbind(x, x[sample(seq_len(nrow(x)), 100),])
+  rownames(x) <- paste0("Object_", seq_len(nrow(x)))
 
   k <- 5L
   nn <- kNN(x, k=k, sort = TRUE)
@@ -113,14 +113,14 @@ test_that("kNN", {
   expect_identical(ncol(nn5$dist), 5L)
 
   ## test with simple data
-  x <- data.frame(x=1:10, row.names = LETTERS[1:10])
+  x <- data.frame(x = 1:10, row.names = LETTERS[1:10], check.names = FALSE)
   nn <- kNN(x, k = 5)
   expect_identical(unname(nn$id[1, ]), 2:6)
   expect_identical(unname(nn$id[5, ]), c(4L, 6L, 3L, 7L, 2L))
   expect_identical(unname(nn$id[10, ]), 9:5)
 
   ## test kNN with query
-  x <- data.frame(x=1:10, row.names = LETTERS[1:10])
+  x <- data.frame(x = 1:10, row.names = LETTERS[1:10], check.names = FALSE)
   nn <- kNN(x[1:8, , drop=FALSE], x[9:10, , drop = FALSE], k = 5)
   expect_identical(nrow(nn$id), 2L)
   expect_identical(unname(nn$id[1, ]), 8:4)

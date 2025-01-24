@@ -83,15 +83,15 @@
 #' cl <- sNNclust(DS3, k = 20, eps = 7, minPts = 16)
 #' cl
 #'
-#' plot(DS3, col = cl$cluster + 1L, cex = .5)
+#' clplot(DS3, cl)
 #'
 #' @export
 sNNclust <- function(x, k, eps, minPts, borderPoints = TRUE, ...) {
-  nn <- sNN(x, k=k, jp = TRUE, ...)
+  nn <- sNN(x, k = k, jp = TRUE, ...)
 
   # convert into a frNN object which already enforces eps
-  nn_list <- lapply(seq(nrow(nn$id)),
-    FUN = function(i) unname(nn$id[i, nn$shared[i,] >= eps]))
+  nn_list <- lapply(seq_len(nrow(nn$id)),
+    FUN = function(i) unname(nn$id[i, nn$shared[i, ] >= eps]))
   snn <- structure(list(id = nn_list, eps = eps, metric = nn$metric),
     class = c("NN", "frNN"))
 
@@ -102,5 +102,5 @@ sNNclust <- function(x, k, eps, minPts, borderPoints = TRUE, ...) {
     type = "SharedNN clustering",
     param = list(k = k, eps = eps, minPts = minPts, borderPoints = borderPoints),
     metric = cl$metric),
-    class = c("general_clustering"))
+    class = "general_clustering")
 }

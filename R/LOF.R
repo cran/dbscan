@@ -104,16 +104,9 @@ lof <- function(x, minPts = 5, ...) {
       toString(names(extra)[is.na(m)]))
   names(extra) <- args[m]
 
-  search <- if (is.null(extra$search))
-    "kdtree"
-  else
-    extra$search
+  search <- extra$search %||% "kdtree"
   search <- .parse_search(search)
-  splitRule <-
-    if (is.null(extra$splitRule))
-      "suggest"
-  else
-    extra$splitRule
+  splitRule <- extra$splitRule %||% "suggest"
   splitRule <- .parse_splitRule(splitRule)
   bucketSize <- if (is.null(extra$bucketSize))
     10L
@@ -125,10 +118,9 @@ lof <- function(x, minPts = 5, ...) {
     as.double(extra$approx)
 
   ### precompute distance matrix for dist search
-  if (search == 3) {
-    if (!inherits(x, "dist"))
-      if (.matrixlike(x))
-        x <- dist(x)
+  if (search == 3 && !inherits(x, "dist")) {
+    if (.matrixlike(x))
+      x <- dist(x)
     else
       stop("x needs to be a matrix to calculate distances")
   }

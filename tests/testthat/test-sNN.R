@@ -10,7 +10,7 @@ test_that("sNN", {
   ## no duplicates first!
   x <- x[!duplicated(x),]
 
-  rownames(x) <- paste0("Object_", 1:nrow(x))
+  rownames(x) <- paste0("Object_", seq_len(nrow(x)))
 
   k <- 5L
   nn <- sNN(x, k=k, sort = TRUE)
@@ -65,7 +65,7 @@ test_that("sNN", {
   expect_equal(nn5, nn5_x)
 
   ## test with simple data
-  x <- data.frame(x=1:10)
+  x <- data.frame(x = 1:10, check.names = FALSE)
   nn <- sNN(x, k = 5)
 
   i <- 1
@@ -76,7 +76,7 @@ test_that("sNN", {
 
   # compute the sNN simularity in R
   ss <- matrix(nrow = nrow(x), ncol = nn$k)
-  for(i in 1:nrow(x))
+  for(i in seq_len(nrow(x)))
     for(j_ind in 1:nn$k)
       ss[i, j_ind] <- length(intersect(c(i, nn$id[i,]), nn$id[nn$id[i,j_ind],]))
 

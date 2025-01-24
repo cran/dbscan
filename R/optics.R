@@ -205,15 +205,8 @@ optics <- function(x, eps = NULL, minPts = 5, ...) {
       toString(names(extra)[is.na(m)]))
   names(extra) <- args[m]
 
-  search <- if (is.null(extra$search))
-    "kdtree"
-  else
-    extra$search
-  splitRule <-
-    if (is.null(extra$splitRule))
-      "suggest"
-  else
-    extra$splitRule
+  search <- extra$search %||% "kdtree"
+  splitRule <- extra$splitRule %||% "suggest"
   search <- .parse_search(search)
   splitRule <- .parse_splitRule(splitRule)
 
@@ -230,10 +223,9 @@ optics <- function(x, eps = NULL, minPts = 5, ...) {
     as.integer(extra$approx)
 
   ### dist search
-  if (search == 3) {
-    if (!inherits(x, "dist"))
-      if (.matrixlike(x))
-        x <- dist(x)
+  if (search == 3 && !inherits(x, "dist")) {
+    if (.matrixlike(x))
+      x <- dist(x)
     else
       stop("x needs to be a matrix to calculate distances")
   }
@@ -244,12 +236,12 @@ optics <- function(x, eps = NULL, minPts = 5, ...) {
     frNN <- frNN(x, eps, ...)
     ## add self match and use C numbering
     frNN$id <- lapply(
-      1:length(frNN$id),
+      seq_along(frNN$id),
       FUN = function(i)
         c(i - 1L, frNN$id[[i]] - 1L)
     )
     frNN$dist <- lapply(
-      1:length(frNN$dist),
+      seq_along(frNN$dist),
       FUN = function(i)
         c(0, frNN$dist[[i]]) ^ 2
     )
@@ -316,15 +308,13 @@ print.optics <- function(x, ...) {
   ))
 
   if (!is.null(x$cluster)) {
-    cl <- unique(x$cluster)
-    cl <- length(cl[cl != 0L])
 
     if (is.na(x$xi)) {
       writeLines(paste0(
         "The clustering contains ",
-        cl,
+        ncluster(x),
         " cluster(s) and ",
-        sum(x$cluster == 0L),
+        nnoise(x),
         " noise points."
       ))
 
@@ -335,7 +325,7 @@ print.optics <- function(x, ...) {
           "The clustering contains ",
           nrow(x$clusters_xi),
           " cluster(s) and ",
-          sum(x$cluster == 0L),
+          nnoise(x),
           " noise points."
         )
       )
@@ -367,7 +357,7 @@ plot.optics <-
       par(mar = c(2, 4, 4, 2) + 0.1, omd = c(0, 1, .15, 1))
 
       # Need to know how to spread out lines
-      y_max <- max(x$reachdist[which(x$reachdist != Inf)])
+      y_max <- max(x$reachdist[!is.infinite(x$reachdist)])
       y_increments <- (y_max / 0.85 * .15) / (nrow(hclusters) + 1L)
 
       # Get top level cluster labels
@@ -383,7 +373,7 @@ plot.optics <-
       )
 
       # Lines beneath plotting region indicating Xi clusters
-      i <- 1:nrow(hclusters)
+      i <- seq_len(nrow(hclusters))
       segments(
         x0 = hclusters$start[i],
         y0 = -(y_increments * i),
@@ -426,7 +416,7 @@ as.dendrogram.optics <- function(object, ...) {
   if (object$minPts > length(object$order)) {
     stop("'minPts' should be less or equal to the points in the dataset.")
   }
-  if (length(which(object$reachdist == Inf)) > 1)
+  if (sum(is.infinite(object$reachdist)) > 1)
     stop(
       "Eps value is not large enough to capture the complete hiearchical structure of the dataset. Please use a large eps value (such as Inf)."
     )
@@ -537,7 +527,7 @@ extractXi <-
               Inf
           else
             object$ord_rd[index + 1]
-          if (esuccr != Inf) {
+          if (!is.infinite(esuccr)) {
             while (!is.na(object$order[index + 1])) {
               index <- index + 1
               if (steepUp(index, object)) {
@@ -548,7 +538,7 @@ extractXi <-
                     Inf
                 else
                   object$ord_rd[index + 1]
-                if (esuccr == Inf) {
+                if (is.infinite(esuccr)) {
                   endsteep <- endsteep - 1
                   break
                 }
@@ -579,7 +569,7 @@ extractXi <-
 
           # Credit to ELKI
           if (correctPredecessors) {
-            while (cend > cstart && object$ord_rd[cend] == Inf) {
+            while (cend > cstart && is.infinite(object$ord_rd[cend])) {
               cend <- cend - 1
             }
           }
@@ -646,18 +636,20 @@ extractXi <-
       object$clusters_xi <- NULL
       object$cluster < rep(0, length(object$cluster))
       return(invisible(object))
-    } else {
-      # Cluster data exists; organize it by starting and ending index, give arbitrary id
-      object$clusters_xi <- do.call(rbind, SetOfClusters)
-      object$clusters_xi <-
-        data.frame(start = unlist(object$clusters_xi[, 1]),
-          end = unlist(object$clusters_xi[, 2]))
-      object$clusters_xi <-
-        object$clusters_xi[order(object$clusters_xi$start, object$clusters_xi$end), ]
-      object$clusters_xi <-
-        cbind(object$clusters_xi, list(cluster_id = 1:nrow(object$clusters_xi)))
-      row.names(object$clusters_xi) <- NULL
     }
+    # Cluster data exists; organize it by starting and ending index, give arbitrary id
+    object$clusters_xi <- do.call(rbind, SetOfClusters)
+    object$clusters_xi <-
+      data.frame(
+        start = unlist(object$clusters_xi[, 1], use.names = FALSE),
+        end = unlist(object$clusters_xi[, 2], use.names = FALSE),
+        check.names = FALSE
+      )
+    object$clusters_xi <-
+      object$clusters_xi[order(object$clusters_xi$start, object$clusters_xi$end), ]
+    object$clusters_xi <-
+      cbind(object$clusters_xi, list(cluster_id = seq_len(nrow(object$clusters_xi))))
+    row.names(object$clusters_xi) <- NULL
 
     ## Populate cluster vector with either:
     ## 1. 'top-level' cluster labels to aid in plotting
@@ -692,7 +684,7 @@ updateFilterSDASet <- function(mib, sdaset, ixi) {
 # Determines if the reachability distance at the current index 'i' is
 # (xi) significantly lower than the next index
 steepUp <- function(i, object, ixi = object$ixi) {
-  if (object$ord_rd[i] >= Inf)
+  if (is.infinite(object$ord_rd[i]))
     return(FALSE)
   if (!valid(i + 1, object))
     return(TRUE)
@@ -704,7 +696,7 @@ steepUp <- function(i, object, ixi = object$ixi) {
 steepDown <- function(i, object, ixi = object$ixi) {
   if (!valid(i + 1, object))
     return(FALSE)
-  if (object$ord_rd[i + 1] >= Inf)
+  if (is.infinite(object$ord_rd[i + 1]))
     return(FALSE)
   return(object$ord_rd[i] * ixi >= object$ord_rd[i + 1])
 }
@@ -720,7 +712,7 @@ extractClusterLabels <- function(cl, order, minimum = FALSE) {
   if (!all(c("start", "end") %in% names(cl)))
     stop("extractClusterLabels expects start and end references")
   if (!"cluster_id" %in% names(cl))
-    cl <- cbind(cl, cluster_id = 1:nrow(cl))
+    cl <- cbind(cl, cluster_id = seq_len(nrow(cl)))
 
   ## Sort cl based on minimum parameter / cluster size
   if (!"cluster_size" %in% names(cl))

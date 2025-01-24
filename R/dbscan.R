@@ -180,6 +180,7 @@
 #' res
 #'
 #' pairs(iris, col = res$cluster + 1L)
+#' clplot(iris, res)
 #'
 #' ## Use a precomputed frNN object
 #' fr <- frNN(iris, eps = .7)
@@ -200,6 +201,7 @@
 #' plot(x, col = res$cluster)
 #' points(x[res$cluster == 0, ], pch = 3, col = "grey")
 #'
+#' clplot(x, res)
 #' hullplot(x, res)
 #'
 #' ## Predict cluster membership for new data points
@@ -284,15 +286,8 @@ dbscan <-
     }
     extra$MinPts <- NULL
 
-    search <- if (is.null(extra$search))
-      "kdtree"
-    else
-      extra$search
-    splitRule <-
-      if (is.null(extra$splitRule))
-        "suggest"
-    else
-      extra$splitRule
+    search <- extra$search %||% "kdtree"
+    splitRule <- extra$splitRule %||% "suggest"
     search <- .parse_search(search)
     splitRule <- .parse_splitRule(splitRule)
 
@@ -308,10 +303,9 @@ dbscan <-
       as.integer(extra$approx)
 
     ### do dist search
-    if (search == 3) {
-      if (!inherits(x, "dist"))
-        if (.matrixlike(x))
-          x <- dist(x)
+    if (search == 3 && !inherits(x, "dist")) {
+      if (.matrixlike(x))
+        x <- dist(x)
       else
         stop("x needs to be a matrix to calculate distances")
     }
@@ -331,7 +325,7 @@ dbscan <-
       frNN <- x$id
       x <- matrix(0.0, nrow = 0, ncol = 0)
 
-    } else{
+    } else {
       if (!.matrixlike(x))
         stop("x needs to be a matrix or data.frame.")
       ## make sure x is numeric
@@ -349,7 +343,7 @@ dbscan <-
     if (length(frNN) > 0)
       frNN <-
       lapply(
-        1:length(frNN),
+        seq_along(frNN),
         FUN = function(i)
           c(i - 1L, frNN[[i]] - 1L)
       )
@@ -390,11 +384,8 @@ dbscan <-
 
 #' @export
 print.dbscan_fast <- function(x, ...) {
-  cl <- unique(x$cluster)
-  cl <- length(cl[cl != 0L])
-
   writeLines(c(
-    paste0("DBSCAN clustering for ", length(x$cluster), " objects."),
+    paste0("DBSCAN clustering for ", nobs(x), " objects."),
     paste0("Parameters: eps = ", x$eps, ", minPts = ", x$minPts),
     paste0(
       "Using ",
@@ -404,9 +395,9 @@ print.dbscan_fast <- function(x, ...) {
     ),
     paste0(
       "The clustering contains ",
-      cl,
+      ncluster(x),
       " cluster(s) and ",
-      sum(x$cluster == 0L),
+      nnoise(x),
       " noise points."
     )
   ))

@@ -104,7 +104,7 @@
 #' )
 #'
 #' plot(x, xlim = range(x), ylim = c(min(x) - sd(x), max(x) + sd(x)), pch = 20)
-#' text(x = x, labels = 1:nrow(x), pos = 3)
+#' text(x = x, labels = seq_len(nrow(x)), pos = 3)
 #'
 #' ### run OPTICS
 #' res <- optics(x, eps = 10,  minPts = 2)
@@ -133,7 +133,7 @@ NULL
 #' @rdname reachability
 #' @export
 print.reachability <- function(x, ...) {
-  avg_reach <- mean(x$reachdist[which(x$reachdist != Inf)], na.rm = TRUE)
+  avg_reach <- mean(x$reachdist[!is.infinite(x$reachdist)], na.rm = TRUE)
   cat(
     "Reachability plot collection for ",
     length(x$order),
@@ -171,7 +171,7 @@ plot.reachability <- function(x,
     lty = 3)
   if (order_labels) {
     text(
-      x = 1:length(x$order),
+      x = seq_along(x$order),
       y = reachdist,
       labels = x$order,
       pos = 3

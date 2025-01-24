@@ -97,7 +97,7 @@
 #' # explore neighborhood of point 10
 #' i <- 10
 #' nn$id[i,]
-#' plot(x, col = ifelse(1:nrow(iris) %in% nn$id[i,], "red", "black"))
+#' plot(x, col = ifelse(seq_len(nrow(iris)) %in% nn$id[i,], "red", "black"))
 #'
 #' # visualize the 5 nearest neighbors
 #' plot(nn, x)
@@ -148,10 +148,9 @@ kNN <-
       stop("Illegal k: needs to be k>=1!")
 
     ### dist search
-    if (search == 3) {
-      if (!inherits(x, "dist"))
-        if (.matrixlike(x))
-          x <- dist(x)
+    if (search == 3 && !inherits(x, "dist")) {
+      if (.matrixlike(x))
+        x <- dist(x)
       else
         stop("x needs to be a matrix to calculate distances")
     }
@@ -206,7 +205,7 @@ kNN <-
       )
       dimnames(ret$dist) <- list(rownames(query), 1:k)
       dimnames(ret$id) <- list(rownames(query), 1:k)
-    } else{
+    } else {
       ret <- kNN_int(
         as.matrix(x),
         as.integer(k),
@@ -225,7 +224,7 @@ kNN <-
     if (sort)
       ret <- sort(ret)
 
-    ret$metric = "euclidean"
+    ret$metric <- "euclidean"
 
     ret
   }
@@ -241,7 +240,7 @@ kNN <-
     return(TRUE)
 
   # check that dist objects have diag = FALSE, upper = FALSE
-  if(attr(x, "Diag") || attr(x, "Upper"))
+  if (attr(x, "Diag") || attr(x, "Upper"))
     stop("x needs to be a dist object with attributes Diag and Upper set to FALSE. Use as.dist(x, diag = FALSE, upper = FALSE) fist.")
   }
 
@@ -290,15 +289,14 @@ sort.kNN <- function(x, decreasing = FALSE, ...) {
   }
 
   ## sort first by dist and break ties using id
-  o <- sapply(
-    1:nrow(x$dist),
-    FUN =
-      function(i)
-        order(x$dist[i,], x$id[i,], decreasing = decreasing)
+  o <- vapply(
+    seq_len(nrow(x$dist)),
+    function(i) order(x$dist[i, ], x$id[i, ], decreasing = decreasing),
+    integer(ncol(x$id))
   )
-  for (i in 1:ncol(o)) {
-    x$dist[i,] <- x$dist[i,][o[, i]]
-    x$id[i,] <- x$id[i,][o[, i]]
+  for (i in seq_len(ncol(o))) {
+    x$dist[i, ] <- x$dist[i, ][o[, i]]
+    x$id[i, ] <- x$id[i, ][o[, i]]
   }
   x$sort <- TRUE
 
@@ -309,10 +307,10 @@ sort.kNN <- function(x, decreasing = FALSE, ...) {
 #' @export
 adjacencylist.kNN <- function(x, ...)
   lapply(
-    seq(nrow(x$id)),
+    seq_len(nrow(x$id)),
     FUN = function(i) {
       ## filter NAs
-      tmp <- x$id[i,]
+      tmp <- x$id[i, ]
       tmp[!is.na(tmp)]
     }
   )
