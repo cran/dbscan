@@ -7,7 +7,6 @@
 // GNU General Public License (GPL) Version 3
 // (see: http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-// Header
 #include "mst.h"
 
 // coreFromDist indexes through the a dist vector to retrieve the core distance;

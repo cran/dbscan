@@ -1,3 +1,8 @@
+# dbscan 1.2.2 (2025-01-24)
+
+## Changes
+* Removed dependence on the /bits/stdc++.h header. 
+
 # dbscan 1.2.1 (2025-01-23)
 
 ## Changes

@@ -1,6 +1,14 @@
+//----------------------------------------------------------------------
+//                                DBSCAN
+// File:                         dbcv.cpp
+//----------------------------------------------------------------------
+// Copyright (c) 2025 Michael Hahsler. All Rights Reserved.
+//
+// This software is provided under the provisions of the
+// GNU General Public License (GPL) Version 3
+// (see: http://www.gnu.org/licenses/gpl-3.0.en.html)
+
 #include <Rcpp.h>
-using namespace Rcpp;
-// [[Rcpp::plugins(cpp11)]]
 
 // Includes
 #include "utilities.h"
@@ -9,6 +17,9 @@ using namespace Rcpp;
 #include "kNN.h"
 #include <string>
 #include <unordered_map>
+
+using namespace Rcpp;
+// [[Rcpp::plugins(cpp11)]]
 
 // [[Rcpp::export]]
 StringVector intToStr(IntegerVector iv){
