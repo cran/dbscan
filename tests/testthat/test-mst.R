@@ -96,4 +96,3 @@ test_that("dist_subset", {
 
   expect_equal(unname(as.matrix(d_sub)), unname(m_sub))
 })
-
