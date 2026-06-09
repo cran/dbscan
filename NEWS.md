@@ -1,3 +1,9 @@
+# dbscan 1.2.5 (2026-06-08)
+
+## Changes
+* OPTICS defaults now to eps = Inf. 
+* Improvement of some man pages.
+
 # dbscan 1.2.4 (2025-12-18)
 
 ## Bugfixes

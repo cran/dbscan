@@ -22,18 +22,17 @@
 #' Implementation of the OPTICS (Ordering points to identify the clustering
 #' structure) point ordering algorithm using a kd-tree.
 #'
-#' **The algorithm**
+#' ## The Algorithm
 #'
 #' This implementation of OPTICS implements the original
 #' algorithm as described by Ankerst et al (1999). OPTICS is an ordering
 #' algorithm with methods to extract a clustering from the ordering.
-#' While using similar concepts as DBSCAN, for OPTICS `eps`
-#' is only an upper limit for the neighborhood size used to reduce
-#' computational complexity. Note that `minPts` in OPTICS has a different
-#' effect then in DBSCAN. It is used to define dense neighborhoods, but since
-#' `eps` is typically set rather high, this does not effect the ordering
-#' much. However, it is also used to calculate the reachability distance and
-#' larger values will make the reachability distance plot smoother.
+#' While using similar concepts as DBSCAN, `minPts` in OPTICS has a different
+#' effect then in DBSCAN. Since it is also used to calculate the reachability
+#' distance, larger values will make the reachability distance plot smoother.
+#' The parameter `eps` is optional and defaults to `Inf`. It only represents a
+#' an upper limit for the neighborhood size used to reduce
+#' computational complexity which is helpful for large data sets.
 #'
 #' OPTICS linearly orders the data points such that points which are spatially
 #' closest become neighbors in the ordering. The closest analog to this
@@ -46,13 +45,13 @@
 #' deeper the valley, the more dense the cluster) and high points indicate
 #' points between clusters.
 #'
-#' **Specifying the data**
+#' ## Specifying the Data
 #'
 #' If `x` is specified as a data matrix, then Euclidean distances and fast
 #' nearest neighbor lookup using a kd-tree are used. See [kNN()] for
 #' details on the parameters for the kd-tree.
 #'
-#' **Extracting a clustering**
+#' ## Extracting a Clustering
 #'
 #' Several methods to extract a clustering from the order returned by OPTICS are
 #' implemented:
@@ -70,7 +69,7 @@
 #'   the ELKI framework and is explained in Schubert et al (2018), but contains a
 #'   set of fixes.
 #'
-#' **Predict cluster memberships**
+#' ## Predict Cluster Memberships
 #'
 #' `predict()` requires an extracted DBSCAN clustering with `extractDBSCAN()` and then
 #' uses predict for `dbscan()`.
@@ -79,11 +78,10 @@
 #' @family clustering functions
 #'
 #' @param x a data matrix or a [dist] object.
-#' @param eps upper limit of the size of the epsilon neighborhood. Limiting the
-#' neighborhood size improves performance and has no or very little impact on
-#' the ordering as long as it is not set too low. If not specified, the largest
-#' minPts-distance in the data set is used which gives the same result as
-#' infinity.
+#' @param eps OPTICS uses a maximum epsilon neighborhood size of `Inf`.
+#' The upper limit of the size can be limited to improves performance. If set
+#' too low then many reachability values will erroneously become `Inf`
+#' shown as dashed lines in the reachability plot. `eps` should be increased.
 #' @param minPts the parameter is used to identify dense neighborhoods and the
 #' reachability distance is calculated as the distance to the minPts nearest
 #' neighbor. Controls the smoothness of the reachability distribution. Default
@@ -190,7 +188,8 @@
 #' res <- optics(d, minPts = 10)
 #' plot(res)
 #' @export
-optics <- function(x, eps = NULL, minPts = 5, ...) {
+optics <- function(x, eps = Inf, minPts = 5, ...) {
+
   ### find eps from minPts
   eps <- eps %||% max(kNNdist(x, k =  minPts))
 
