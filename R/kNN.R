@@ -132,11 +132,11 @@ kNN <-
         stop("kNN in x has not enough nearest neighbors.")
       if (!x$sort)
         x <- sort(x)
-      x$id <- x$id[, 1:k]
+      x$id <- x$id[, 1:k, drop = FALSE]
       if (!is.null(x$dist))
-        x$dist <- x$dist[, 1:k]
+        x$dist <- x$dist[, 1:k, drop = FALSE]
       if (!is.null(x$shared))
-        x$dist <- x$shared[, 1:k]
+        x$shared <- x$shared[, 1:k, drop = FALSE]
       x$k <- k
       return(x)
     }
@@ -242,7 +242,7 @@ kNN <-
 
   # check that dist objects have diag = FALSE, upper = FALSE
   if (attr(x, "Diag") || attr(x, "Upper"))
-    stop("x needs to be a dist object with attributes Diag and Upper set to FALSE. Use as.dist(x, diag = FALSE, upper = FALSE) fist.")
+    stop("x needs to be a dist object with attributes Diag and Upper set to FALSE. Use as.dist(x, diag = FALSE, upper = FALSE) first.")
   }
 
 dist_to_kNN <- function(x, k) {

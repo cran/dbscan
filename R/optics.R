@@ -28,9 +28,9 @@
 #' algorithm as described by Ankerst et al (1999). OPTICS is an ordering
 #' algorithm with methods to extract a clustering from the ordering.
 #' While using similar concepts as DBSCAN, `minPts` in OPTICS has a different
-#' effect then in DBSCAN. Since it is also used to calculate the reachability
+#' effect than in DBSCAN. Since it is also used to calculate the reachability
 #' distance, larger values will make the reachability distance plot smoother.
-#' The parameter `eps` is optional and defaults to `Inf`. It only represents a
+#' The parameter `eps` is optional and defaults to `Inf`. It only represents
 #' an upper limit for the neighborhood size used to reduce
 #' computational complexity which is helpful for large data sets.
 #'
@@ -79,7 +79,7 @@
 #'
 #' @param x a data matrix or a [dist] object.
 #' @param eps OPTICS uses a maximum epsilon neighborhood size of `Inf`.
-#' The upper limit of the size can be limited to improves performance. If set
+#' The upper limit of the size can be limited to improve performance. If set
 #' too low then many reachability values will erroneously become `Inf`
 #' shown as dashed lines in the reachability plot. `eps` should be increased.
 #' @param minPts the parameter is used to identify dense neighborhoods and the
@@ -114,7 +114,7 @@
 #'
 #' For `extractXi()`, in addition the following components
 #' are available:
-#' \item{xi}{ Steepness threshold`x`. }
+#' \item{xi}{ Steepness threshold `xi`. }
 #' \item{cluster }{ assigned cluster labels in the order of the data points in `x`.}
 #' \item{clusters_xi }{ data.frame containing the start and end of each cluster
 #' found in the OPTICS ordering. }
@@ -404,7 +404,7 @@ as.dendrogram.optics <- function(object, ...) {
   }
   if (sum(is.infinite(object$reachdist)) > 1)
     stop(
-      "Eps value is not large enough to capture the complete hiearchical structure of the dataset. Please use a large eps value (such as Inf)."
+      "Eps value is not large enough to capture the complete hierarchical structure of the dataset. Please use a large eps value (such as Inf)."
     )
   as.dendrogram(as.reachability(object))
 }
@@ -421,7 +421,7 @@ extractDBSCAN <- function(object, eps_cl) {
   cluster <- integer(n)
 
   clusterid <- 0L         ### 0 is noise
-  for (i in 1:n) {
+  for (i in seq_len(n)) {
     if (reachdist[i] > eps_cl) {
       if (coredist[i] <= eps_cl) {
         clusterid <- clusterid + 1L
@@ -620,7 +620,7 @@ extractXi <-
     if (length(SetOfClusters) == 0) {
       warning(paste("No clusters were found with threshold:", xi))
       object$clusters_xi <- NULL
-      object$cluster < rep(0, length(object$cluster))
+      object$cluster <- integer(length(object$order))
       return(invisible(object))
     }
     # Cluster data exists; organize it by starting and ending index, give arbitrary id
@@ -711,7 +711,7 @@ extractClusterLabels <- function(cl, order, minimum = FALSE) {
     }
 
   ## Fill in the [cluster] vector with cluster IDs
-  clusters <- rep(0, length(order))
+  clusters <- integer(length(order))
   for (cid in cl$cluster_id) {
     cluster <- cl[cl$cluster_id == cid, ]
     if (minimum) {

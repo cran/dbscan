@@ -12,7 +12,7 @@ A data frame with 100 observations on the following 2 variables.
 }
 \source{
 See the HDBSCAN notebook from github documentation:
-\url{http://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html}
+\url{https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html}
 }
 \description{
 Contains 100 2-d points, half of which are contained in two moons or

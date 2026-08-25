@@ -1,3 +1,14 @@
+# dbscan 1.2.6 (2026-08-24)
+
+## Changes
+* Fixed many Typos (by m-muecke)
+* Finish std::iota migration (bu m-muecke)
+
+## Bugfixes
+* kNN preserve $dist when reducing k on an sNN object (by m-muecke)
+* mst: avoid out-of-bounds write for the MST root node
+* Optics: assign noise labels as integers when extractXi finds no clusters (by m-muecke) 
+
 # dbscan 1.2.5 (2026-06-08)
 
 ## Changes

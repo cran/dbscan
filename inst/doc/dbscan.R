@@ -142,5 +142,3 @@ dend
 ### code chunk number 21: opticsDendrogram
 ###################################################
 plot(dend, ylab = "Reachability dist.", leaflab = "none")
-
-

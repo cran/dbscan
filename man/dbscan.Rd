@@ -99,7 +99,7 @@ Any precomputed distance matrix (dist object) can be specified as \code{x}.
 You may run into memory issues since distance matrices are large.
 
 A precomputed frNN object can be supplied as \code{x}. In this case
-\code{eps} does not need to be specified. This option us useful for large
+\code{eps} does not need to be specified. This option is useful for large
 data sets, where a sparse distance matrix is available. See
 \code{\link[=frNN]{frNN()}} how to create frNN objects.
 }
@@ -260,13 +260,13 @@ Clustering in Spatial Databases: The Algorithm GDBSCAN and Its Applications.
 \doi{10.1023/A:1009745219419}
 }
 \seealso{
-Other clustering functions: 
-\code{\link{extractFOSC}()},
-\code{\link{hdbscan}()},
-\code{\link{jpclust}()},
-\code{\link{ncluster}()},
-\code{\link{optics}()},
-\code{\link{sNNclust}()}
+Other clustering functions:
+\code{\link[=extractFOSC]{extractFOSC()}},
+\code{\link[=hdbscan]{hdbscan()}},
+\code{\link[=jpclust]{jpclust()}},
+\code{\link[=ncluster]{ncluster()}},
+\code{\link[=optics]{optics()}},
+\code{\link[=sNNclust]{sNNclust()}}
 }
 \author{
 Michael Hahsler

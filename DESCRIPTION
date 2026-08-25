@@ -1,8 +1,8 @@
 Package: dbscan
 Title: Density-Based Spatial Clustering of Applications with Noise
         (DBSCAN) and Related Algorithms
-Version: 1.2.5
-Date: 2026-06-08
+Version: 1.2.6
+Date: 2026-08-24
 Authors@R: c(
     person("Michael", "Hahsler", email = "mhahsler@lyle.smu.edu", 
            role = c("aut", "cre", "cph"),
@@ -37,9 +37,9 @@ Copyright: ANN library is copyright by University of Maryland, Sunil
         Arya and David Mount. All other code is copyright by Michael
         Hahsler and Matthew Piekenbrock.
 Encoding: UTF-8
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.0.0
 NeedsCompilation: yes
-Packaged: 2026-06-08 21:55:37 UTC; mhahsler
+Packaged: 2026-08-25 14:52:20 UTC; mhahsler
 Author: Michael Hahsler [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0003-2716-1405>),
   Matthew Piekenbrock [aut, cph],
@@ -48,4 +48,4 @@ Author: Michael Hahsler [aut, cre, cph] (ORCID:
   Claudia Malzer [ctb]
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2026-06-09 16:40:02 UTC
+Date/Publication: 2026-08-25 21:20:13 UTC

@@ -7,7 +7,7 @@
 \alias{as.dendrogram.hclust}
 \alias{as.dendrogram.hdbscan}
 \alias{as.dendrogram.reachability}
-\title{Coersions to Dendrogram}
+\title{Coercions to Dendrogram}
 \usage{
 as.dendrogram(object, ...)
 
@@ -26,17 +26,17 @@ as.dendrogram(object, ...)
 }
 \description{
 Provides a new generic function to coerce objects to dendrograms with
-\code{\link[stats:dendrogram]{stats::as.dendrogram()}} as the default. Additional methods for
+\code{\link[stats:as.dendrogram]{stats::as.dendrogram()}} as the default. Additional methods for
 \link{hclust}, \link{hdbscan} and \link{reachability} objects are provided.
 }
 \details{
-Coersion methods for
+Coercion methods for
 \link{hclust}, \link{hdbscan} and \link{reachability} objects to \link{dendrogram} are provided.
 
 The coercion from \code{hclust} is a faster C++ reimplementation of the coercion in
 package \code{stats}. The original implementation can be called
-using \code{\link[stats:dendrogram]{stats::as.dendrogram()}}.
+using \code{\link[stats:as.dendrogram]{stats::as.dendrogram()}}.
 
-The coersion from \link{hdbscan} builds the non-simplified HDBSCAN hierarchy as a
+The coercion from \link{hdbscan} builds the non-simplified HDBSCAN hierarchy as a
 dendrogram object.
 }

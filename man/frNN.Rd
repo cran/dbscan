@@ -75,7 +75,7 @@ This function uses a kd-tree to find the fixed radius nearest neighbors
 (including distances) fast.
 }
 \details{
-If \code{x} is specified as a data matrix, then Euclidean distances an fast
+If \code{x} is specified as a data matrix, then Euclidean distances and fast
 nearest neighbor lookup using a kd-tree are used.
 
 To create a frNN object from scratch, you need to supply at least the
@@ -123,12 +123,12 @@ Approximate Nearest Neighbor Searching,
 \url{http://www.cs.umd.edu/~mount/ANN/}.
 }
 \seealso{
-Other NN functions: 
+Other NN functions:
 \code{\link{NN}},
-\code{\link{comps}()},
-\code{\link{kNN}()},
-\code{\link{kNNdist}()},
-\code{\link{sNN}()}
+\code{\link[=comps]{comps()}},
+\code{\link[=kNN]{kNN()}},
+\code{\link[=kNNdist]{kNNdist()}},
+\code{\link[=sNN]{sNN()}}
 }
 \author{
 Michael Hahsler

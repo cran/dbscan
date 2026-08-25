@@ -45,7 +45,7 @@
 #' Scikit-learn: Machine learning in Python. _Journal of Machine Learning
 #' Research_ 12, no. Oct (2011): 2825-2830.
 #' @source See the HDBSCAN notebook from github documentation:
-#' \url{http://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html}
+#' \url{https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html}
 #' @keywords datasets
 #' @examples
 #' data(moons)
