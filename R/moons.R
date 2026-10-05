@@ -5,7 +5,7 @@
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -26,13 +26,15 @@
 #' This data was generated with the following Python commands using the
 #' SciKit-Learn library:
 #'
-#' `> import sklearn.datasets as data`
+#' ```Python
+#' import sklearn.datasets as data
 #'
-#' `> moons = data.make_moons(n_samples=50, noise=0.05)`
-#'
-#' `> blobs = data.make_blobs(n_samples=50, centers=[(-0.75,2.25), (1.0, 2.0)], cluster_std=0.25)`
-#'
-#' `> test_data = np.vstack([moons, blobs])`
+#' moons = data.make_moons(n_samples=50, noise=0.05)
+#' blobs = data.make_blobs(n_samples=50,
+#'                         centers=[(-0.75,2.25), (1.0, 2.0)],
+#'                         cluster_std=0.25)
+#' test_data = np.vstack([moons, blobs])
+#' ```
 #'
 #' @name moons
 #' @docType data
@@ -51,6 +53,5 @@
 #' data(moons)
 #' plot(moons, pch=20)
 NULL
-
 
 

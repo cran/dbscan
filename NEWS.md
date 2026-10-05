@@ -1,3 +1,16 @@
+# dbscan 1.2.7 (2026-10-04)
+
+## Changes
+* Raised required R version to 4.3.0 to guarantee C++17 support.
+* Parameter and return value validation is now consistent and strict.
+
+## Bugfixes
+* clplot() now passes ... on to plot() (by m-muecke)
+* hdbscan() and predict() for hdbscan objects now always return integer 
+  cluster assignments (by m-muecke)
+* OPTICS: Fixed calculation for epsilon when set to infinity.
+* predict() for dbscan, optics, and hdbscan objects now works with single-column data (by m-muecke)
+
 # dbscan 1.2.6 (2026-08-24)
 
 ## Changes

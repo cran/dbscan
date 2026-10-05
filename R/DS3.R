@@ -5,7 +5,7 @@
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -38,7 +38,7 @@
 #' @references Karypis, George, Eui-Hong Han, and Vipin Kumar (1999).
 #' Chameleon: Hierarchical clustering using dynamic modeling. _Computer_
 #' 32(8): 68-75.
-#' @source Obtained from \url{http://cs.joensuu.fi/sipu/datasets/}
+#' @source Obtained from the Clustering Datasets Repository, University of Joensuu, Finland.
 #' @keywords datasets
 #' @examples
 #' data(DS3)

@@ -39,6 +39,7 @@ test_that("predict", {
   res <- extractDBSCAN(res, eps = .3)
   pr <- predict(res, newdata, data = x)
 
+  expect_type(res$cluster, "integer")
   rbind(true = res$cluster[idx], pred = pr)
   expect_equal(res$cluster[idx], pr)
 
@@ -47,6 +48,8 @@ test_that("predict", {
   # HDBSCAN (note predict is not perfect for the data.)
   res <- hdbscan(x, minPts = 3)
   pr <- predict(res, newdata, data = x)
+  expect_type(res$cluster, "integer")
+  expect_type(pr, "integer")
 
   rbind(true = res$cluster[idx], pred = pr)
   accuracy <- sum(res$cluster[idx] == pr)/length(pr)
@@ -56,4 +59,12 @@ test_that("predict", {
   #plot(x, col = ifelse(res$cluster == 0, "gray", res$cluster))
   #points(newdata, col = ifelse(pr == 0, "gray", pr), pch = 16)
   #points(newdata[res$cluster[idx] != pr,, drop = FALSE], col = "red", pch = 4, lwd = 2)
+})
+
+test_that("predict works with a single column", {
+  x <- cbind(x = c(1:5, 11:15))
+  res <- dbscan(x, eps = 1.5, minPts = 3)
+  expect_identical(predict(res, x, data = x), res$cluster)
+  res <- hdbscan(x, minPts = 3)
+  expect_identical(predict(res, x, data = x), res$cluster)
 })

@@ -5,7 +5,7 @@
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -57,7 +57,7 @@ predict.hdbscan <- function(object, newdata, data, ...) {
 
   # don't use noise
   coredist <- object$coredist[clusters != 0]
-  data <- data[clusters != 0,]
+  data <- data[clusters != 0, , drop = FALSE]
   clusters <- clusters[clusters != 0]
 
   # find minPts - 1 nearest neighbor
@@ -90,7 +90,7 @@ predict.hdbscan <- function(object, newdata, data, ...) {
   }
 
   # don't use noise
-  data <- data[clusters != 0,]
+  data <- data[clusters != 0, , drop = FALSE]
   clusters <- clusters[clusters != 0]
 
   # calculate the frNN between newdata and data (only keep entries for newdata)

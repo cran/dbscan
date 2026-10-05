@@ -11,6 +11,8 @@ downloads](https://cranlogs.r-pkg.org/badges/dbscan)](https://CRAN.R-project.org
 status](https://mhahsler.r-universe.dev/badges/dbscan)](https://mhahsler.r-universe.dev/dbscan)
 [![StackOverflow](https://img.shields.io/badge/stackoverflow-dbscan%2br-orange.svg)](https://stackoverflow.com/questions/tagged/dbscan%2br)
 
+**Maintainer:** [Michael Hahsler](https://michael.hahsler.net)
+
 ## Introduction
 
 This R package ([Hahsler et al. 2019](#ref-hahsler2019dbscan)) provides
@@ -23,25 +25,19 @@ includes:
 - **DBSCAN:** Density-based spatial clustering of applications with
   noise ([<span class="nocase">Ester et al.</span>
   1996](#ref-ester1996density)).
-
 - **FOSC:** Framework for optimal selection of clusters for unsupervised
   and semisupervised clustering of hierarchical cluster trees ([Campello
   et al. 2013](#ref-campello2013density)).
-
 - **HDBSCAN:** Hierarchical DBSCAN with simplified hierarchy extraction
   ([Campello et al. 2015](#ref-campello2015hierarchical)).
-
 - **Jarvis-Patrick Clustering**: Clustering using a similarity measure
   based on shared near neighbors ([Jarvis and Patrick
   1973](#ref-jarvis1973)).
-
 - **OPTICS/OPTICSXi:** Ordering points to identify the clustering
-  structure and cluster extraction methods
-
+  structure and cluster extraction methods ([Ankerst et al.
+  1999](#ref-ankerst1999optics)).
 - **SNN Clustering**: Shared nearest neighbor clustering ([Ertöz et al.
   2003](#ref-erdoz2003)).
-
-  ([Ankerst et al. 1999](#ref-ankerst1999optics)).
 
 **Outlier Detection**
 
@@ -78,6 +74,7 @@ The following R packages use `dbscan`:
 [cordillera](https://CRAN.R-project.org/package=cordillera),
 [CPC](https://CRAN.R-project.org/package=CPC),
 [crosshap](https://CRAN.R-project.org/package=crosshap),
+[crownsegmentr](https://CRAN.R-project.org/package=crownsegmentr),
 [cyclicwave](https://CRAN.R-project.org/package=cyclicwave),
 [daltoolbox](https://CRAN.R-project.org/package=daltoolbox),
 [DataSimilarity](https://CRAN.R-project.org/package=DataSimilarity),
@@ -96,6 +93,7 @@ The following R packages use `dbscan`:
 [fdacluster](https://CRAN.R-project.org/package=fdacluster),
 [flowcluster](https://CRAN.R-project.org/package=flowcluster),
 [flownet](https://CRAN.R-project.org/package=flownet),
+[FORTLS](https://CRAN.R-project.org/package=FORTLS),
 [FuelDeep3D](https://CRAN.R-project.org/package=FuelDeep3D),
 [funtimes](https://CRAN.R-project.org/package=funtimes),
 [HaploVar](https://CRAN.R-project.org/package=HaploVar),
@@ -120,10 +118,13 @@ The following R packages use `dbscan`:
 [outlierMBC](https://CRAN.R-project.org/package=outlierMBC),
 [pagoda2](https://CRAN.R-project.org/package=pagoda2),
 [parameters](https://CRAN.R-project.org/package=parameters),
+[ParBayesianOptimization](https://CRAN.R-project.org/package=ParBayesianOptimization),
 [performance](https://CRAN.R-project.org/package=performance),
 [pguIMP](https://CRAN.R-project.org/package=pguIMP),
+[phynotype](https://CRAN.R-project.org/package=phynotype),
 [PiC](https://CRAN.R-project.org/package=PiC),
 [quickOutlier](https://CRAN.R-project.org/package=quickOutlier),
+[R4VN](https://CRAN.R-project.org/package=R4VN),
 [rarefun](https://CRAN.R-project.org/package=rarefun),
 [rcrisp](https://CRAN.R-project.org/package=rcrisp),
 [Rhobots](https://CRAN.R-project.org/package=Rhobots),
@@ -134,6 +135,7 @@ The following R packages use `dbscan`:
 [SampleCore](https://CRAN.R-project.org/package=SampleCore),
 [seriation](https://CRAN.R-project.org/package=seriation),
 [sfdep](https://CRAN.R-project.org/package=sfdep),
+[sfhotspot](https://CRAN.R-project.org/package=sfhotspot),
 [sfnetworks](https://CRAN.R-project.org/package=sfnetworks),
 [sharp](https://CRAN.R-project.org/package=sharp),
 [smotefamily](https://CRAN.R-project.org/package=smotefamily),
@@ -145,6 +147,7 @@ The following R packages use `dbscan`:
 [squat](https://CRAN.R-project.org/package=squat),
 [ssel](https://CRAN.R-project.org/package=ssel),
 [ssMRCD](https://CRAN.R-project.org/package=ssMRCD),
+[STATassist](https://CRAN.R-project.org/package=STATassist),
 [stdbscan](https://CRAN.R-project.org/package=stdbscan),
 [stream](https://CRAN.R-project.org/package=stream),
 [SuperCell](https://CRAN.R-project.org/package=SuperCell),
@@ -158,23 +161,6 @@ The following R packages use `dbscan`:
 [VBphenoR](https://CRAN.R-project.org/package=VBphenoR),
 [VIProDesign](https://CRAN.R-project.org/package=VIProDesign),
 [weird](https://CRAN.R-project.org/package=weird)
-
-To cite package ‘dbscan’ in publications use:
-
-> Hahsler M, Piekenbrock M, Doran D (2019). “dbscan: Fast Density-Based
-> Clustering with R.” *Journal of Statistical Software*, *91*(1), 1-30.
-> <doi:10.18637/jss.v091.i01> <https://doi.org/10.18637/jss.v091.i01>.
-
-    @Article{,
-      title = {{dbscan}: Fast Density-Based Clustering with {R}},
-      author = {Michael Hahsler and Matthew Piekenbrock and Derek Doran},
-      journal = {Journal of Statistical Software},
-      year = {2019},
-      volume = {91},
-      number = {1},
-      pages = {1--30},
-      doi = {10.18637/jss.v091.i01},
-    }
 
 ## Installation
 
@@ -207,7 +193,7 @@ x <- as.matrix(iris[, 1:4])
 DBSCAN
 
 ``` r
-db <- dbscan(x, eps = .42, minPts = 5)
+db <- dbscan(x, eps = 0.42, minPts = 5)
 db
 ```
 
@@ -227,7 +213,7 @@ Visualize the resulting clustering (noise points are shown in black).
 pairs(x, col = db$cluster + 1L)
 ```
 
-![](inst/README_files/dbscan-1.png)<!-- -->
+![](man/figures/README-dbscan-1.png)<!-- -->
 
 OPTICS
 
@@ -245,11 +231,11 @@ Extract DBSCAN-like clustering from OPTICS and create a reachability
 plot (extracted DBSCAN clusters at eps_cl=.4 are colored)
 
 ``` r
-opt <- extractDBSCAN(opt, eps_cl = .4)
+opt <- extractDBSCAN(opt, eps_cl = 0.4)
 plot(opt)
 ```
 
-![](inst/README_files/OPTICS_extractDBSCAN-1.png)<!-- -->
+![](man/figures/README-OPTICS_extractDBSCAN-1.png)<!-- -->
 
 HDBSCAN
 
@@ -275,108 +261,45 @@ finds 2 stable clusters.
 plot(hdb, show_flat = TRUE)
 ```
 
-![](inst/README_files/hdbscan-1.png)<!-- -->
+![](man/figures/README-hdbscan-1.png)<!-- -->
 
-## Using dbscan with tidyverse
+## Additional guides
 
-`dbscan` provides for all clustering algorithms `tidy()`, `augment()`,
-and `glance()` so they can be easily used with tidyverse, ggplot2 and
-[tidymodels](https://www.tidymodels.org/learn/statistics/k-means/).
-
-``` r
-library(tidyverse)
-db <- x %>% dbscan(eps = .42, minPts = 5)
-```
-
-Get cluster statistics as a tibble
-
-``` r
-tidy(db)
-```
-
-    ## # A tibble: 4 × 3
-    ##   cluster  size noise
-    ##   <fct>   <int> <lgl>
-    ## 1 0          29 TRUE 
-    ## 2 1          48 FALSE
-    ## 3 2          37 FALSE
-    ## 4 3          36 FALSE
-
-Visualize the clustering with ggplot2 (use an x for noise points)
-
-``` r
-augment(db, x) %>% 
-  ggplot(aes(x = Petal.Length, y = Petal.Width)) +
-    geom_point(aes(color = .cluster, shape = noise)) +
-    scale_shape_manual(values=c(19, 4))
-```
-
-![](inst/README_files/tidyverse3-1.png)<!-- -->
-
-## Using dbscan from Python
-
-R, the R package `dbscan`, and the Python package `rpy2` need to be
-installed.
-
-``` python
-import pandas as pd
-import numpy as np
-
-### prepare data
-iris = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data', 
-                   header = None, 
-                   names = ['SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species'])
-iris_numeric = iris[['SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth']]
-
-# get R dbscan package
-from rpy2.robjects import packages
-dbscan = packages.importr('dbscan')
-
-# enable automatic conversion of pandas dataframes to R dataframes
-from rpy2.robjects import pandas2ri
-pandas2ri.activate()
-
-db = dbscan.dbscan(iris_numeric, eps = 0.5, MinPts = 5)
-print(db)
-```
-
-    ## DBSCAN clustering for 150 objects.
-    ## Parameters: eps = 0.5, minPts = 5
-    ## Using euclidean distances and borderpoints = TRUE
-    ## The clustering contains 2 cluster(s) and 17 noise points.
-    ## 
-    ##  0  1  2 
-    ## 17 49 84 
-    ## 
-    ## Available fields: cluster, eps, minPts, dist, borderPoints
-
-``` python
-# get the cluster assignment vector
-labels = np.array(db.rx('cluster'))
-labels
-```
-
-    ## array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    ##         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-    ##         1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 0, 2, 2, 2, 2, 2,
-    ##         2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0,
-    ##         2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 0, 0, 2, 0, 0,
-    ##         2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0,
-    ##         2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]],
-    ##       dtype=int32)
+- [Using dbscan with
+  tidyverse](https://michael.hahsler.net/dbscan/articles/tidyverse.html)
+- [Using dbscan from
+  Python](https://michael.hahsler.net/dbscan/articles/python.html)
 
 ## License
 
 The dbscan package is licensed under the [GNU General Public License
-(GPL) Version 3](https://www.gnu.org/licenses/gpl-3.0.en.html). The
-**OPTICSXi** R implementation was directly ported from the ELKI
-framework’s Java implementation (GNU AGPLv3), with permission by the
-original author, Erich Schubert.
+(GPL) Version 3 or later](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-## Changes
+The **OPTICSXi** R implementation in `R/optics_extractXi.R` was directly
+ported from the ELKI framework’s Java implementation with permission by
+the original author, Erich Schubert. This function is redistributed
+under the stricter [GNU
+AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html). Remove the file
+and function to use the package under the GNU GPL v3 license.
 
-- List of changes from
-  [NEWS.md](https://github.com/mhahsler/dbscan/blob/master/NEWS.md)
+## Citation request
+
+To cite package ‘dbscan’ in publications use:
+
+> Hahsler M, Piekenbrock M, Doran D (2019). “dbscan: Fast Density-Based
+> Clustering with R.” *Journal of Statistical Software*, *91*(1), 1-30.
+> <doi:10.18637/jss.v091.i01> <https://doi.org/10.18637/jss.v091.i01>.
+
+    @Article{,
+      title = {{dbscan}: Fast Density-Based Clustering with {R}},
+      author = {Michael Hahsler and Matthew Piekenbrock and Derek Doran},
+      journal = {Journal of Statistical Software},
+      year = {2019},
+      volume = {91},
+      number = {1},
+      pages = {1--30},
+      doi = {10.18637/jss.v091.i01},
+    }
 
 ## References
 

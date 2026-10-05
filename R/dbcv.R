@@ -5,7 +5,7 @@
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -65,7 +65,7 @@
 #' @return A list with the DBCV `score` for the clustering,
 #'   the density sparseness of cluster (`dsc`) values,
 #'   the density separation of pairs of clusters (`dspc`) distances,
-#'   and the validity indices of clusters (`c_c`).
+#'   and the validity indices of clusters (`v_c`).
 #'
 #' @author Matt Piekenbrock and Michael Hahsler
 #' @references Davoud Moulavi and Pablo A. Jaskowiak and
