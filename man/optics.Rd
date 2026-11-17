@@ -16,7 +16,7 @@ optics(x, eps = Inf, minPts = 5, ...)
 
 \method{print}{optics}(x, ...)
 
-\method{plot}{optics}(x, cluster = TRUE, predecessor = FALSE, ...)
+\method{plot}{optics}(x, col = NULL, ...)
 
 \method{as.reachability}{optics}(object, ...)
 
@@ -32,37 +32,37 @@ extractXi(object, xi, minimum = FALSE, correctPredecessors = TRUE)
 \item{x}{a data matrix or a \link{dist} object.}
 
 \item{eps}{maximum epsilon neighborhood size only used for performance.
-When set to \code{Inf}, then the actual maximal needed
-radius is estimated from \code{minPts} and the data.
-The upper limit can be further reduced to improve
-performance. If set
-too low then many reachability values will erroneously become \code{Inf}
-shown as dashed lines in the reachability plot. \code{eps} should be increased.}
+The default \code{Inf} does not restrict the neighborhood and gives the complete
+reachability structure. \code{NULL} is treated as \code{Inf}. See details.}
 
-\item{minPts}{the parameter is used to identify dense neighborhoods and the
-reachability distance is calculated as the distance to the minPts nearest
-neighbor. Controls the smoothness of the reachability distribution. Default
-is 5 points.}
+\item{minPts}{the parameter is used to identify dense neighborhoods. The
+core distance of a point is the distance to its (\code{minPts - 1})-th nearest
+neighbor (\code{minPts} includes the point itself). It is used to calculate the
+reachability distances and controls the smoothness of the reachability
+plot. Default is 5 points.}
 
 \item{...}{additional arguments are passed on to fixed-radius nearest
 neighbor search algorithm. See \code{\link[=frNN]{frNN()}} for details on how to
-control the search strategy.}
+control the search strategy. For \code{plot()}, they are passed on to
+\code{\link[=plot.reachability]{plot.reachability()}} (e.g., \code{hide_first} and \code{type}).}
 
-\item{cluster, predecessor}{plot clusters and predecessors.}
+\item{col}{colors used to plot the reachability distances in the order of
+the points in the ordering. The default \code{NULL} colors the points by
+cluster (noise is shown in black).}
 
 \item{object}{clustering object.}
 
 \item{eps_cl}{Threshold to identify clusters (\code{eps_cl <= eps}).}
 
-\item{xi}{Steepness threshold to identify clusters hierarchically using the
-Xi method.}
+\item{xi}{Steepness threshold between 0 and 1 (exclusive) to identify
+clusters hierarchically using the Xi method.}
 
 \item{minimum}{logical, representing whether or not to extract the minimal
 (non-overlapping) clusters in the Xi clustering algorithm.}
 
 \item{correctPredecessors}{logical, correct a common artifact by pruning
 the steep up area for points that have predecessors not in the
-cluster--found by the ELKI framework, see details below.}
+cluster--found by the ELKI framework, see details for \code{extractXi()}.}
 
 \item{newdata}{new data points for which the cluster membership should be
 predicted.}
@@ -91,7 +91,7 @@ found in the OPTICS ordering. }
 }
 \description{
 Implementation of the OPTICS (Ordering points to identify the clustering
-structure) point ordering algorithm using a kd-tree.
+structure) point ordering algorithm using a k-d tree.
 }
 \details{
 \subsection{The Algorithm}{
@@ -102,10 +102,11 @@ algorithm with methods to extract a clustering from the ordering.
 While using similar concepts as DBSCAN, \code{minPts} in OPTICS has a different
 effect than in DBSCAN. Since it is also used to calculate the reachability
 distance, larger values will make the reachability distance plot smoother.
-The parameter \code{eps} is optional and defaults to \code{Inf}.
-It represents
-an upper limit for the neighborhood size used to reduce
-computational complexity which is helpful for large data sets.
+The parameter \code{eps} is optional. It represents
+an upper limit for the neighborhood size that can be used to reduce
+computational complexity for large data sets. The default \code{eps = Inf} does
+not limit the neighborhood size and gives the complete reachability
+structure.
 
 OPTICS linearly orders the data points such that points which are spatially
 closest become neighbors in the ordering. The closest analog to this
@@ -122,8 +123,41 @@ points between clusters.
 \subsection{Specifying the Data}{
 
 If \code{x} is specified as a data matrix, then Euclidean distances and fast
-nearest neighbor lookup using a kd-tree are used. See \code{\link[=kNN]{kNN()}} for
-details on the parameters for the kd-tree.
+nearest neighbor lookup using a k-d tree are used. See \code{\link[=kNN]{kNN()}} for
+details on the parameters for the k-d tree.
+}
+
+\subsection{The effect of eps}{
+
+The default \code{eps = Inf} (\code{NULL} is also treated as \code{Inf}) does not restrict
+the neighborhood and results in the complete reachability structure (only
+the first reachability distance is undefined). This is the original OPTICS
+behavior. Computation in this implementation uses
+Prim's algorithm on the reachability graph using core distances
+and distances that are calculated on the fly. This needs only \eqn{O(n)}
+additional memory, but the running time is quadratic in the number of data
+points, so it can still be slow for large data sets.
+
+A finite \code{eps} restricts the maximum epsilon neighborhood size, which can
+improve performance significantly for large data sets. If \code{eps} is too small,
+then points can have undefined core distances (they are noise) and
+reachability distances. Undefined reachability distances are
+shown as dotted lines in the reachability plot, and the ordering can
+differ from the one for \code{eps = Inf}. \code{optics()} gives a warning if a finite
+\code{eps} results in undefined reachability distances in addition to the first
+one. If the plot shows too many dotted lines then \code{eps} should be increased.
+}
+
+\subsection{Ties}{
+
+OPTICS repeatedly processes the unprocessed point with the smallest
+reachability distance. If several points have the same reachability distance,
+ties are broken by the position of the point in the data: the point with the
+lower id (row number) is processed first. This follows the ELKI
+implementation. With ties, the returned order (and therefore the
+reachability plot and extracted clusters) can depend on the row order of
+the data. Ties are common for data with repeated values or for
+data on a regular grid.
 }
 
 \subsection{Extracting a Clustering}{
@@ -139,9 +173,14 @@ noise.
 \item \code{extractXi()} extract clusters hierarchically specified in Ankerst et al
 (1999) based on the steepness of the reachability plot. One interpretation
 of the \code{xi} parameter is that it classifies clusters by change in
-relative cluster density. The used algorithm was originally contributed by
-the ELKI framework and is explained in Schubert et al (2018), but contains a
-set of fixes.
+relative cluster density. The algorithm is a port of the implementation in
+the ELKI framework (version 0.8.0). It follows Ankerst et al (1999) with the
+improvements described in Schubert and Gertz (2018).
+With \code{correctPredecessors = TRUE} (the default), the end of
+each cluster is shortened so that the predecessor of its last
+point is inside the cluster. This step is not part of the original
+algorithm and removes a common artifact (found by the ELKI framework).
+Clusters with fewer than \code{minPts} points are not reported.
 }
 }
 
@@ -160,9 +199,9 @@ x <- cbind(
   y = runif(4, 0, 1) + rnorm(n, sd = 0.1)
   )
 
-plot(x, col=rep(1:4, times = 100))
+plot(x, col=rep(1:4, times = 100), asp = 1)
 
-### run OPTICS (Note: we use the default eps calculation)
+### run OPTICS (Note: we use the default eps = Inf)
 res <- optics(x, minPts = 10)
 res
 
@@ -173,7 +212,7 @@ res$order
 plot(res)
 
 ### plot the order of points in the reachability plot
-plot(x, col = "grey")
+plot(x, col = "grey", pch = 19, asp = 1)
 polygon(x[res$order, ])
 
 ### extract a DBSCAN clustering by cutting the reachability plot at eps_cl
@@ -181,20 +220,20 @@ res <- extractDBSCAN(res, eps_cl = .065)
 res
 
 plot(res)  ## black is noise
-hullplot(x, res)
+hullplot(x, res, asp = 1)
 
 ### re-cut at a higher eps threshold
 res <- extractDBSCAN(res, eps_cl = .07)
 res
 plot(res)
-hullplot(x, res)
+hullplot(x, res, asp = 1)
 
 ### extract hierarchical clustering of varying density using the Xi method
 res <- extractXi(res, xi = 0.01)
 res
 
 plot(res)
-hullplot(x, res)
+hullplot(x, res, asp = 1)
 
 # Xi cluster structure
 res$clusters_xi
@@ -207,7 +246,7 @@ plot(res)
 \references{
 Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Joerg
 Sander (1999). OPTICS: Ordering Points To Identify the Clustering Structure.
-\emph{ACM SIGMOD international conference on Management of data.} ACM Press. pp.
+\emph{ACM SIGMOD international conference on Management of data.} ACM Press. pp. 49-60.
 \doi{10.1145/304181.304187}
 
 Hahsler M, Piekenbrock M, Doran D (2019). dbscan: Fast Density-Based
@@ -219,7 +258,7 @@ Extracted from OPTICS Plots. In \emph{Lernen, Wissen, Daten, Analysen (LWDA 2018
 pp. 318-329.
 }
 \seealso{
-Density \link{reachability}.
+\link{reachability}, \code{\link[=dbscan]{dbscan()}}, \code{\link[=hdbscan]{hdbscan()}}.
 
 Other clustering functions:
 \code{\link[=dbscan]{dbscan()}},

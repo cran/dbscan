@@ -20,7 +20,7 @@ set containing GLOSH values for all data points.
 }
 \description{
 Calculate the Global-Local Outlier Score from Hierarchies (GLOSH) score for
-each data point using a kd-tree to speed up kNN search.
+each data point using a k-d tree to speed up kNN search.
 }
 \details{
 GLOSH compares the density of a point to densities of any points associated
@@ -91,9 +91,15 @@ Other Outlier Detection Functions:
 \code{\link[=kNNdist]{kNNdist()}},
 \code{\link[=lof]{lof()}},
 \code{\link[=pointdensity]{pointdensity()}}
+
+Other HDBSCAN functions:
+\code{\link[=extractFOSC]{extractFOSC()}},
+\code{\link[=hdbscan]{hdbscan()}},
+\code{\link[=mst_dist]{mst_dist()}}
 }
 \author{
 Matt Piekenbrock
 }
+\concept{HDBSCAN functions}
 \concept{Outlier Detection Functions}
 \keyword{model}

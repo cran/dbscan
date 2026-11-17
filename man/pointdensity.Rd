@@ -12,6 +12,7 @@ pointdensity(
   search = "kdtree",
   bucketSize = 10,
   splitRule = "suggest",
+  shrinkRule = "suggest",
   approx = 0
 )
 }
@@ -26,7 +27,7 @@ the kernel.}
 points inside the eps-neighborhood, the eps-neighborhood density estimate,
 or a Gaussian density estimate be returned?}
 
-\item{search, bucketSize, splitRule, approx}{algorithmic parameters for
+\item{search, bucketSize, splitRule, shrinkRule, approx}{algorithmic parameters for
 \code{\link[=frNN]{frNN()}}.}
 }
 \value{
@@ -36,7 +37,7 @@ the count or density values for each data point.
 \description{
 Calculate the local density at each data point as either the number of
 points in the eps-neighborhood (as used in \code{dbscan()}) or perform kernel density
-estimation (KDE) using a uniform kernel. The function uses a kd-tree for fast
+estimation (KDE) using a uniform kernel. The function uses a k-d tree for fast
 fixed-radius nearest neighbor search.
 }
 \details{
@@ -48,7 +49,7 @@ count in the eps-neighborhood divided by \eqn{(2\,eps\,n)}{(2 eps n)}, where
 
 Alternatively, \code{type = "gaussian"} calculates a Gaussian kernel estimate where
 \code{eps} is used as the standard deviation. To speed up computation, a
-kd-tree is used to find all points within 3 times the standard deviation and
+k-d tree is used to find all points within 3 times the standard deviation and
 these points are used for the estimate.
 
 Points with low local density often indicate noise (see e.g., Wishart (1969)

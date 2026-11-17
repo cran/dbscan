@@ -21,7 +21,7 @@
 #'
 #' Calculate the local density at each data point as either the number of
 #' points in the eps-neighborhood (as used in `dbscan()`) or perform kernel density
-#' estimation (KDE) using a uniform kernel. The function uses a kd-tree for fast
+#' estimation (KDE) using a uniform kernel. The function uses a k-d tree for fast
 #' fixed-radius nearest neighbor search.
 #'
 #' `dbscan()` estimates the density around a point as the number of points in the
@@ -32,7 +32,7 @@
 #'
 #' Alternatively, `type = "gaussian"` calculates a Gaussian kernel estimate where
 #' `eps` is used as the standard deviation. To speed up computation, a
-#' kd-tree is used to find all points within 3 times the standard deviation and
+#' k-d tree is used to find all points within 3 times the standard deviation and
 #' these points are used for the estimate.
 #'
 #' Points with low local density often indicate noise (see e.g., Wishart (1969)
@@ -48,7 +48,7 @@
 #' @param type `"frequency"`, `"density"`, or `"gaussian"`. should the raw count of
 #' points inside the eps-neighborhood, the eps-neighborhood density estimate,
 #' or a Gaussian density estimate be returned?
-#' @param search,bucketSize,splitRule,approx algorithmic parameters for
+#' @param search,bucketSize,splitRule,shrinkRule,approx algorithmic parameters for
 #' [frNN()].
 #'
 #' @return A vector of the same length as data points (rows) in `x` with
@@ -98,6 +98,7 @@ pointdensity <- function(x,
   search = "kdtree",
   bucketSize = 10,
   splitRule = "suggest",
+  shrinkRule = "suggest",
   approx = 0) {
   type <- match.arg(type, choices = c("frequency", "density", "gaussian"))
   eps <- .validate_nonnegative_scalar(eps, "eps")
@@ -107,7 +108,8 @@ pointdensity <- function(x,
   if (type == "gaussian")
     return (.pointdensity_gaussian(x, sd = eps, search = search,
                                    bucketSize = bucketSize,
-                                   splitRule = splitRule, approx = approx))
+                                   splitRule = splitRule,
+                                   shrinkRule = shrinkRule, approx = approx))
 
   # regular dbscan density estimation
   if (inherits(x, "dist")) {
@@ -118,6 +120,7 @@ pointdensity <- function(x,
       search = search,
       bucketSize = bucketSize,
       splitRule = splitRule,
+      shrinkRule = shrinkRule,
       approx = approx
     )
     d <- lengths(nn$id) + 1L
@@ -126,6 +129,7 @@ pointdensity <- function(x,
     # faster implementation for a data matrix
     search <- .parse_search(search)
     splitRule <- .parse_splitRule(splitRule)
+    shrinkRule <- .parse_shrinkRule(shrinkRule)
     x <- .as_finite_numeric_matrix(x)
 
     d <- dbscan_density_int(
@@ -134,6 +138,7 @@ pointdensity <- function(x,
       as.integer(search),
       as.integer(bucketSize),
       as.integer(splitRule),
+      as.integer(shrinkRule),
       as.double(approx)
     )
   }

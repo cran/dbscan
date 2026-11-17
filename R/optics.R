@@ -20,7 +20,7 @@
 #' Ordering Points to Identify the Clustering Structure (OPTICS)
 #'
 #' Implementation of the OPTICS (Ordering points to identify the clustering
-#' structure) point ordering algorithm using a kd-tree.
+#' structure) point ordering algorithm using a k-d tree.
 #'
 #' ## The Algorithm
 #'
@@ -30,10 +30,11 @@
 #' While using similar concepts as DBSCAN, `minPts` in OPTICS has a different
 #' effect than in DBSCAN. Since it is also used to calculate the reachability
 #' distance, larger values will make the reachability distance plot smoother.
-#' The parameter `eps` is optional and defaults to `Inf`.
-#' It represents
-#' an upper limit for the neighborhood size used to reduce
-#' computational complexity which is helpful for large data sets.
+#' The parameter `eps` is optional. It represents
+#' an upper limit for the neighborhood size that can be used to reduce
+#' computational complexity for large data sets. The default `eps = Inf` does
+#' not limit the neighborhood size and gives the complete reachability
+#' structure.
 #'
 #' OPTICS linearly orders the data points such that points which are spatially
 #' closest become neighbors in the ordering. The closest analog to this
@@ -49,8 +50,39 @@
 #' ## Specifying the Data
 #'
 #' If `x` is specified as a data matrix, then Euclidean distances and fast
-#' nearest neighbor lookup using a kd-tree are used. See [kNN()] for
-#' details on the parameters for the kd-tree.
+#' nearest neighbor lookup using a k-d tree are used. See [kNN()] for
+#' details on the parameters for the k-d tree.
+#'
+#' ## The effect of eps
+#'
+#' The default `eps = Inf` (`NULL` is also treated as `Inf`) does not restrict
+#' the neighborhood and results in the complete reachability structure (only
+#' the first reachability distance is undefined). This is the original OPTICS
+#' behavior. Computation in this implementation uses
+#' Prim's algorithm on the reachability graph using core distances
+#' and distances that are calculated on the fly. This needs only \eqn{O(n)}
+#' additional memory, but the running time is quadratic in the number of data
+#' points, so it can still be slow for large data sets.
+#'
+#' A finite `eps` restricts the maximum epsilon neighborhood size, which can
+#' improve performance significantly for large data sets. If `eps` is too small,
+#' then points can have undefined core distances (they are noise) and
+#' reachability distances. Undefined reachability distances are
+#' shown as dotted lines in the reachability plot, and the ordering can
+#' differ from the one for `eps = Inf`. `optics()` gives a warning if a finite
+#' `eps` results in undefined reachability distances in addition to the first
+#' one. If the plot shows too many dotted lines then `eps` should be increased.
+#'
+#' ## Ties
+#'
+#' OPTICS repeatedly processes the unprocessed point with the smallest
+#' reachability distance. If several points have the same reachability distance,
+#' ties are broken by the position of the point in the data: the point with the
+#' lower id (row number) is processed first. This follows the ELKI
+#' implementation. With ties, the returned order (and therefore the
+#' reachability plot and extracted clusters) can depend on the row order of
+#' the data. Ties are common for data with repeated values or for
+#' data on a regular grid.
 #'
 #' ## Extracting a Clustering
 #'
@@ -66,9 +98,14 @@
 #' * `extractXi()` extract clusters hierarchically specified in Ankerst et al
 #'   (1999) based on the steepness of the reachability plot. One interpretation
 #'   of the `xi` parameter is that it classifies clusters by change in
-#'   relative cluster density. The used algorithm was originally contributed by
-#'   the ELKI framework and is explained in Schubert et al (2018), but contains a
-#'   set of fixes.
+#'   relative cluster density. The algorithm is a port of the implementation in
+#'   the ELKI framework (version 0.8.0). It follows Ankerst et al (1999) with the
+#'   improvements described in Schubert and Gertz (2018).
+#'   With `correctPredecessors = TRUE` (the default), the end of
+#'   each cluster is shortened so that the predecessor of its last
+#'   point is inside the cluster. This step is not part of the original
+#'   algorithm and removes a common artifact (found by the ELKI framework).
+#'   Clusters with fewer than `minPts` points are not reported.
 #'
 #' ## Predict Cluster Memberships
 #'
@@ -80,29 +117,29 @@
 #'
 #' @param x a data matrix or a [dist] object.
 #' @param eps maximum epsilon neighborhood size only used for performance.
-#' When set to `Inf`, then the actual maximal needed
-#' radius is estimated from `minPts` and the data.
-#' The upper limit can be further reduced to improve
-#' performance. If set
-#' too low then many reachability values will erroneously become `Inf`
-#' shown as dashed lines in the reachability plot. `eps` should be increased.
-#' @param minPts the parameter is used to identify dense neighborhoods and the
-#' reachability distance is calculated as the distance to the minPts nearest
-#' neighbor. Controls the smoothness of the reachability distribution. Default
-#' is 5 points.
+#' The default `Inf` does not restrict the neighborhood and gives the complete
+#' reachability structure. `NULL` is treated as `Inf`. See details.
+#' @param minPts the parameter is used to identify dense neighborhoods. The
+#' core distance of a point is the distance to its (`minPts - 1`)-th nearest
+#' neighbor (`minPts` includes the point itself). It is used to calculate the
+#' reachability distances and controls the smoothness of the reachability
+#' plot. Default is 5 points.
 #' @param eps_cl Threshold to identify clusters (`eps_cl <= eps`).
-#' @param xi Steepness threshold to identify clusters hierarchically using the
-#' Xi method.
+#' @param xi Steepness threshold between 0 and 1 (exclusive) to identify
+#' clusters hierarchically using the Xi method.
 #' @param object an object of class `optics`.
 #' @param minimum logical, representing whether or not to extract the minimal
 #' (non-overlapping) clusters in the Xi clustering algorithm.
 #' @param correctPredecessors logical, correct a common artifact by pruning
 #' the steep up area for points that have predecessors not in the
-#' cluster--found by the ELKI framework, see details below.
+#' cluster--found by the ELKI framework, see details for `extractXi()`.
+#' @param col colors used to plot the reachability distances in the order of
+#' the points in the ordering. The default `NULL` colors the points by
+#' cluster (noise is shown in black).
 #' @param ...  additional arguments are passed on to fixed-radius nearest
 #' neighbor search algorithm. See [frNN()] for details on how to
-#' control the search strategy.
-#' @param cluster,predecessor plot clusters and predecessors.
+#' control the search strategy. For `plot()`, they are passed on to
+#' [plot.reachability()] (e.g., `hide_first` and `type`).
 #'
 #' @return An object of class `optics` with components:
 #' \item{eps }{ value of `eps` parameter. }
@@ -124,11 +161,11 @@
 #' found in the OPTICS ordering. }
 #'
 #' @author Michael Hahsler and Matthew Piekenbrock
-#' @seealso Density [reachability].
+#' @seealso [reachability], [dbscan()], [hdbscan()].
 #'
 #' @references Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Joerg
 #' Sander (1999). OPTICS: Ordering Points To Identify the Clustering Structure.
-#' _ACM SIGMOD international conference on Management of data._ ACM Press. pp.
+#' _ACM SIGMOD international conference on Management of data._ ACM Press. pp. 49-60.
 #' \doi{10.1145/304181.304187}
 #'
 #' Hahsler M, Piekenbrock M, Doran D (2019). dbscan: Fast Density-Based
@@ -148,9 +185,9 @@
 #'   y = runif(4, 0, 1) + rnorm(n, sd = 0.1)
 #'   )
 #'
-#' plot(x, col=rep(1:4, times = 100))
+#' plot(x, col=rep(1:4, times = 100), asp = 1)
 #'
-#' ### run OPTICS (Note: we use the default eps calculation)
+#' ### run OPTICS (Note: we use the default eps = Inf)
 #' res <- optics(x, minPts = 10)
 #' res
 #'
@@ -161,7 +198,7 @@
 #' plot(res)
 #'
 #' ### plot the order of points in the reachability plot
-#' plot(x, col = "grey")
+#' plot(x, col = "grey", pch = 19, asp = 1)
 #' polygon(x[res$order, ])
 #'
 #' ### extract a DBSCAN clustering by cutting the reachability plot at eps_cl
@@ -169,20 +206,20 @@
 #' res
 #'
 #' plot(res)  ## black is noise
-#' hullplot(x, res)
+#' hullplot(x, res, asp = 1)
 #'
 #' ### re-cut at a higher eps threshold
 #' res <- extractDBSCAN(res, eps_cl = .07)
 #' res
 #' plot(res)
-#' hullplot(x, res)
+#' hullplot(x, res, asp = 1)
 #'
 #' ### extract hierarchical clustering of varying density using the Xi method
 #' res <- extractXi(res, xi = 0.01)
 #' res
 #'
 #' plot(res)
-#' hullplot(x, res)
+#' hullplot(x, res, asp = 1)
 #'
 #' # Xi cluster structure
 #' res$clusters_xi
@@ -195,22 +232,15 @@
 optics <- function(x, eps = Inf, minPts = 5, ...) {
 
   minPts <- .validate_integer_scalar(minPts, "minPts")
-  
+
   ### we treat NULL as infinity
   eps <- eps %||% Inf
   eps <- .validate_nonnegative_scalar(eps, "eps", allow_infinite = TRUE)
 
-  ### For infinity we use eps from minPts which gives the same result
-  if (is.infinite(eps)) {
-    eps <- max(kNNdist(x, k =  minPts - 1L))
-    if (!is.finite(eps))
-      stop("minPts is larger than the number of objects-1 or a distance is infinite distance.")
-  }
-
   ### extra contains settings for frNN
-  ### search = "kdtree", bucketSize = 10, splitRule = "suggest", approx = 0
+  ### search = "kdtree", bucketSize = 10, splitRule = "suggest", shrinkRule = "suggest", approx = 0
   extra <- list(...)
-  args <- c("search", "bucketSize", "splitRule", "approx")
+  args <- c("search", "bucketSize", "splitRule", "shrinkRule", "approx")
   m <- pmatch(names(extra), args)
   if (anyNA(m))
     stop("Unknown parameter: ",
@@ -219,8 +249,43 @@ optics <- function(x, eps = Inf, minPts = 5, ...) {
 
   search <- .parse_search(extra$search %||% "kdtree")
   splitRule <- .parse_splitRule(extra$splitRule %||% "suggest")
+  shrinkRule <- .parse_shrinkRule(extra$shrinkRule %||% "suggest")
   bucketSize <- .validate_bucket_size(extra$bucketSize %||% 10L)
   approx <- .validate_nonnegative_scalar(extra$approx %||% 0, "approx")
+
+  ### eps = Inf (unlimited neighborhood): OPTICS is equivalent to Prim's
+  ### algorithm on the reachability graph. We can compute it exactly without
+  ### neighborhood queries, using only O(n) additional memory. The
+  ### general code below is used for a finite eps (and approximate search).
+  if (is.infinite(eps) && approx == 0) {
+    if (inherits(x, "dist")) {
+      .check_dist(x)
+      if (!all(is.finite(x)))
+        stop("x needs to contain only finite distances.")
+      n <- attr(x, "Size")
+    } else {
+      x <- .as_finite_numeric_matrix(x)
+      n <- nrow(x)
+    }
+
+    # every point needs a core distance (minPts points including the point)
+    if (n >= minPts) {
+      knn_args <- extra[intersect(names(extra), c("search", "bucketSize", "splitRule", "shrinkRule"))]
+      cd <- do.call(kNNdist, c(list(x, k = minPts - 1L), knn_args))
+
+      ret <- if (inherits(x, "dist"))
+        optics_prim_dist(x, as.double(n), as.double(cd))
+      else
+        optics_prim(x, as.double(cd))
+
+      ret$minPts <- as.integer(minPts)
+      ret$eps <- as.double(eps)
+      ret$eps_cl <- NA_real_
+      ret$xi <- NA_real_
+      class(ret) <- "optics"
+      return(ret)
+    }
+  }
 
   ### dist search
   if (search == 3L && !inherits(x, "dist")) {
@@ -233,7 +298,8 @@ optics <- function(x, eps = Inf, minPts = 5, ...) {
   ## for dist we provide the R code with a frNN list and no x
   frNN <- list()
   if (inherits(x, "dist")) {
-    frNN <- frNN(x, eps, ...)
+    ### frNN needs a finite radius. The largest distance includes all points.
+    frNN <- frNN(x, if (is.infinite(eps)) max(x) else eps, ...)
     ## add self match and use C numbering
     frNN$id <- lapply(
       seq_along(frNN$id),
@@ -261,6 +327,7 @@ optics <- function(x, eps = Inf, minPts = 5, ...) {
       as.integer(search),
       as.integer(bucketSize),
       as.integer(splitRule),
+      as.integer(shrinkRule),
       as.double(approx),
       frNN
     )
@@ -270,6 +337,20 @@ optics <- function(x, eps = Inf, minPts = 5, ...) {
   ret$eps_cl <- NA_real_
   ret$xi <- NA_real_
   class(ret) <- "optics"
+
+  ### The first point always has an undefined reachability distance. Additional
+  ### undefined values mean that the neighborhood is too small.
+  if (is.finite(eps)) {
+    n_undefined <- sum(is.infinite(ret$reachdist)) - 1L
+    if (n_undefined > 0L)
+      warning(
+        "optics: ", n_undefined, " of ", length(ret$order),
+        " points have an undefined reachability distance in addition to the",
+        " first point (eps = ", format(eps), " is too small). The ordering can",
+        " differ from the one for eps = Inf. Use a larger eps or eps = Inf.",
+        call. = FALSE
+      )
+  }
 
   ret
 }
@@ -331,9 +412,12 @@ print.optics <- function(x, ...) {
 #' @export
 plot.optics <-
   function(x,
-    cluster = TRUE,
-    predecessor = FALSE,
-    ...) {
+           col = NULL,
+           ...) {
+
+    if (is.null(col))
+        col <- x$cluster[x$order] + 1L
+
     # OPTICS cluster extraction methods
     if (inherits(x$cluster, "xics") ||
         all(c("start", "end", "cluster_id") %in% names(x$clusters_xi))) {
@@ -351,9 +435,9 @@ plot.optics <-
 
       # Get top level cluster labels
       # top_level <- extractClusterLabels(x$clusters_xi, x$order)
-      plot(
+      plot.reachability(
         as.reachability(x),
-        col = x$cluster[x$order] + 1L,
+        col = col,
         xlab = NA,
         xaxt = 'n',
         yaxs = "i",
@@ -377,7 +461,7 @@ plot.optics <-
         !is.null(x$eps_cl)) {
       # Works for integers too
       ## extractDBSCAN clustering
-      plot(as.reachability(x), col = x$cluster[x$order] + 1L, ...)
+      plot.reachability(as.reachability(x), col = col, ...)
       lines(
         x = c(0, length(x$cluster)),
         y = c(x$eps_cl, x$eps_cl),

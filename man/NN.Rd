@@ -14,12 +14,22 @@ adjacencylist(x, ...)
 
 \method{sort}{NN}(x, decreasing = FALSE, ...)
 
-\method{plot}{NN}(x, data, main = NULL, pch = 16, col = NULL, linecol = "gray", ...)
+\method{plot}{NN}(
+  x,
+  data,
+  main = NULL,
+  pch = 16,
+  col = "black",
+  linecol = "gray",
+  xlab = NULL,
+  ylab = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{a \code{NN} object}
 
-\item{...}{further parameters past on to \code{\link[=plot]{plot()}}.}
+\item{...}{further parameters are passed on to \code{\link[graphics:plot.default]{graphics::plot.default()}}.}
 
 \item{decreasing}{sort in decreasing order?}
 
@@ -29,14 +39,26 @@ adjacencylist(x, ...)
 
 \item{pch}{plotting character.}
 
-\item{col}{color used for the data points (nodes).}
+\item{col}{color used for the data points (nodes). Use \code{NULL} to make
+the points invisible.}
 
 \item{linecol}{color used for edges.}
+
+\item{xlab, ylab}{axis labels. The default is to use the column names of
+\code{data} or, if the data is projected, the principal components with the
+percentage of variance they explain.}
 }
 \description{
 NN is an abstract S3 superclass for the classes of the objects returned
 by \code{\link[=kNN]{kNN()}}, \code{\link[=frNN]{frNN()}} and \code{\link[=sNN]{sNN()}}. Methods for sorting, plotting and getting an
 adjacency list are defined.
+}
+\details{
+\code{plot()} draws the neighborhood graph in the first two dimensions of
+\code{data}. If \code{data} has more than two columns, then the data is first
+projected onto its first two principal components using \code{\link[stats:prcomp]{stats::prcomp()}}
+(centered, but not scaled, so Euclidean distances are preserved as well as
+possible) and the graph is drawn in the projection.
 }
 \section{Subclasses}{
 
@@ -47,11 +69,12 @@ adjacency list are defined.
 data(iris)
 x <- iris[, -5]
 
-# finding kNN directly in data (using a kd-tree)
+# finding kNN directly in data (using a k-d tree)
 nn <- kNN(x, k=5)
 nn
 
-# plot the kNN where NN are shown as line conecting points.
+# plot the kNN where NN are shown as line connecting points.
+# Since the data has more than 2 dimensions, a PCA projection is used.
 plot(nn, x)
 
 # show the first few elements of the adjacency list

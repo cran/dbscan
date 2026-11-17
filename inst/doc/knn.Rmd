@@ -44,7 +44,7 @@ support `print()`, `sort()`, `plot()`, `adjacencylist()`, and `comps()` for
 finding connected components.
 
 Nearest neighbor search is optimized for Euclidean distance where it used 
-kd-tree implemented in the ANN library (Mount and Arya, 2010).
+k-d tree implemented in the ANN library (Mount and Arya, 2010).
 
 ## Example data
 
@@ -104,12 +104,12 @@ The graph can be plotted for small, low-dimensional data. The first two data
 columns are used as coordinates.
 
 ```{r plot-knn}
-plot(knn5, x, pch = 19, main = "5-nearest-neighbor graph")
+plot(knn5, x, asp = 1, cex = .5, main = "5-nearest-neighbor graph")
 ```
 
 ### Reuse and reduce a search
 
-A stored search can be reduced without rebuilding the kd-tree. This is useful
+A stored search can be reduced without rebuilding the k-d tree. This is useful
 when an analysis needs several values of `k`: calculate the largest required
 neighborhood once and retain its leading columns.
 
@@ -142,11 +142,16 @@ query_knn$dist
 ```
 
 Plotting a query result colors the reference observations selected for each
-query. The query points are added as crosses.
+query. The query points are added as crosses and the assignment area is shown 
+as a circle.
 
 ```{r plot-query}
-plot(query_knn, x, col = "grey70", main = "Neighbors of query points")
+plot(query_knn, x, col = "grey", asp = 1, main = "Neighbors of query points")
 points(query, pch = 4, lwd = 2, cex = 1.3)
+symbols(query[1,1], query[1,2], circles = query_knn$dist[1,4], 
+        inches = FALSE, add = TRUE)
+symbols(query[2,1], query[1,2], circles = query_knn$dist[2,4], 
+        inches = FALSE, add = TRUE)
 ```
 
 Self-matches are not automatically removed in query mode. Thus, if a query row
@@ -180,7 +185,8 @@ which(lengths(fr$id) == 0L)
 Like a kNN graph, a fixed-radius graph can be plotted.
 
 ```{r plot-frnn}
-plot(fr, x, pch = 19, main = "Fixed-radius graph (eps = 0.25)")
+plot(fr, x, pch = 19, asp = 1, cex = .5,
+     main = "Fixed-radius graph (eps = 0.25)")
 ```
 
 ### Reduce a stored radius
@@ -367,7 +373,7 @@ Setting `decreasing = TRUE` reverses the normal distance order for `kNN` and
 ## Using non-Euclidean distances
 
 Supplying a `dist` object allows `kNN()`, `frNN()`, and `sNN()` to use another
-dissimilarity measure. However, this means that the efficient kd-tree 
+dissimilarity measure. However, this means that the efficient k-d tree 
 implementation cannot be used.
 
 ```{r other-distance}
@@ -393,7 +399,7 @@ meaningful for the application.
 
 For numeric data, the `search` argument offers three strategies:
 
-* `"kdtree"`, the default, builds a kd-tree and is typically the best starting
+* `"kdtree"`, the default, builds a k-d tree and is typically the best starting
   point for low- or moderate-dimensional data;
 * `"linear"` checks the observations without building a tree; and
 * `"dist"` first calculates all pairwise Euclidean distances.
@@ -411,18 +417,18 @@ c(
 )
 ```
 
-`bucketSize` and `splitRule` control construction of the kd-tree. Their
+`bucketSize` and `splitRule` control construction of the k-d tree. Their
 defaults are appropriate for most uses. Setting `approx` above zero enables
 approximate search, which can improve speed at the cost of omitting some true
 neighbors. Assess the effect on the downstream analysis before using it.
 
-Kd-trees generally become less effective as dimensionality grows. Linear
+K-d trees generally become less effective as dimensionality grows. Linear
 search, an application-specific dimension reduction, or a different distance
 representation may be preferable in high-dimensional settings.
 
 ## Important details
 
-* Input data and query points must be numeric and finite for kd-tree and linear
+* Input data and query points must be numeric and finite for k-d tree and linear
   search.
 * A search of `x` against itself excludes self-matches; query searches do not.
 * `kNN()` returns exactly `k` observations. If multiple candidates tie at the

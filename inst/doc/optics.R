@@ -15,7 +15,7 @@ x <- cbind(
   y = runif(4, 0, 1) + rnorm(n, sd = 0.1)
 )
 
-plot(x, pch = 19, asp = 1, main = "Example data")
+plot(x, asp = 1, main = "Example data")
 
 ## ----fit----------------------------------------------------------------------
 opt <- optics(x, minPts = 10)
@@ -41,10 +41,9 @@ plot(opt_db)
 ## ----plot-dbscan--------------------------------------------------------------
 table(opt_db$cluster)
 
-plot(
+hullplot(
   x,
-  col = opt_db$cluster + 1L,
-  pch = ifelse(opt_db$cluster == 0, 4, 19),
+  opt_db,
   asp = 1,
   main = "Clusters extracted at eps_cl = 0.065"
 )
@@ -63,17 +62,14 @@ opt_xi$clusters_xi
 plot(opt_xi)
 
 ## ----plot-xi------------------------------------------------------------------
-plot(
-  x,
-  col = opt_xi$cluster + 1L,
-  pch = ifelse(opt_xi$cluster == 0, 4, 19),
-  asp = 1,
-  main = "Top-level Xi cluster labels"
-)
+hullplot(x, opt_xi, asp = 1, main = "Optics Xi Clusters")
 
 ## ----minimum-xi---------------------------------------------------------------
 opt_xi_min <- extractXi(opt, xi = 0.05, minimum = TRUE)
 opt_xi_min
+plot(opt_xi_min)
+
+hullplot(x, opt_xi_min, asp = 1, main = "Optics Xi (minimal clusters)")
 
 ## ----dendrogram---------------------------------------------------------------
 dend <- as.dendrogram(opt)

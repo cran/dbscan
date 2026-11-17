@@ -8,23 +8,28 @@ extractFOSC(
   x,
   constraints,
   alpha = 0,
-  minPts = 2L,
+  minPts = NULL,
   prune_unstable = FALSE,
-  validate_constraints = FALSE
+  validate_constraints = FALSE,
+  cluster_selection_epsilon = 0
 )
 }
 \arguments{
-\item{x}{a valid \link{hclust} object created via \code{\link[=hclust]{hclust()}} or \code{\link[=hdbscan]{hdbscan()}}.}
+\item{x}{a valid \link{hclust} object created via \code{\link[=hclust]{hclust()}} or the result of
+\code{\link[=hdbscan]{hdbscan()}}. For an \code{\link[=hdbscan]{hdbscan()}} result, its hierarchy (the \code{hc} component)
+is used.}
 
-\item{constraints}{Either a list or matrix of pairwise constraints. If
-missing, an unsupervised measure of stability is used to make local cuts and
+\item{constraints}{Pairwise constraints given as a list, a vector (like a
+\link{dist} object) or a matrix. If missing, an unsupervised measure of stability is used to make local cuts and
 extract the optimal clusters. See details.}
 
 \item{alpha}{numeric; weight between \eqn{[0, 1]} for mixed-objective
 semi-supervised extraction. Defaults to 0.}
 
-\item{minPts}{numeric; Defaults to 2. Only needed if class-less noise is a
-valid label in the model.}
+\item{minPts}{integer; minimum cluster size to extract (must be at least 2).
+The default
+value of \code{NULL} uses for an \code{x} that was created by \code{\link[=hdbscan]{hdbscan()}}
+its stored \code{minPts} value, otherwise 2 is used.}
 
 \item{prune_unstable}{logical; should significantly unstable subtrees be
 pruned? The default is \code{FALSE} for the original optimal extraction
@@ -33,14 +38,22 @@ implies.}
 
 \item{validate_constraints}{logical; should constraints be checked for
 validity? See details for what are considered valid constraints.}
+
+\item{cluster_selection_epsilon}{double; a distance threshold below which
+no clusters should be selected (see Malzer & Baum 2020, and
+\code{\link[=hdbscan]{hdbscan()}}).
+The default of 0.0 means this feature is not used.}
 }
 \value{
 A list with the elements:
 
 \item{cluster }{A integer vector with cluster assignments. Zero
-indicates noise points (if any).}
+indicates noise points (if any). The cluster ids are the ids of the clusters
+in the simplified cluster tree and are therefore not necessarily
+consecutive.}
 \item{hc }{The original \link{hclust} object with additional list elements
-\code{"stability"}, \code{"constraint"}, and \code{"total"}
+\code{"cluster"} (the id of the cluster assigned to each of the \eqn{n - 1}
+merge steps), \code{"stability"}, \code{"constraint"}, and \code{"total"}
 for the \eqn{n - 1} cluster-wide objective scores from the extraction.}
 }
 \description{
@@ -65,25 +78,34 @@ clusters. This is implemented in R in function \code{\link[stats:cutree]{stats::
 Although such methods are widespread, using global parameter
 settings are inherently limited in that they cannot capture patterns within
 the cluster hierarchy at varying \emph{local} levels of granularity.
+\subsection{The role of minPts for condensing the clustering tree}{
 
 Rather than partitioning a hierarchy based on the number of the cluster one
 expects to find (\eqn{k}) or based on some linkage distance threshold
 (\eqn{H}), the FOSC proposes that the optimal clusters may exist at varying
-distance thresholds in the hierarchy. To enable this idea, FOSC requires one
-parameter (minPts) that represents \emph{the minimum number of points that
+distance thresholds in the hierarchy. To enable this idea, FOSC uses the
+\code{minPts} parameter. It represents \emph{the minimum number of points that
 constitute a valid cluster.} The first step of the FOSC algorithm is to
 traverse the given cluster hierarchy divisively, recording new clusters at
 each split if both branches represent more than or equal to minPts. Branches
 that contain less than minPts points at one or both branches inherit the
 parent clusters identity. Note that using FOSC, due to the constraint that
-minPts must be greater than or equal to 2, it is possible that the optimal
-cluster solution chosen makes local cuts that render parent branches of
-sizes less than minPts as noise, which are denoted as 0 in the final
-solution.
+minPts must be greater than or equal to 2, points that leave a cluster in
+a branch with fewer than minPts points are not part of any new cluster.
+Depending on the local cuts chosen by the optimal solution, such points can
+end up as noise, which is denoted as 0 in the final solution.
 
-Traversing the original cluster tree using minPts creates a new, simplified
-cluster tree that is then post-processed recursively to extract clusters
-that maximize for each cluster \eqn{C_i}{Ci} the cost function
+For a hierarchy created by \code{\link[=hdbscan]{hdbscan()}}, \code{extractFOSC()} recomputes the
+stability on the raw hierarchy using \code{minPts}. By default, the \code{minPts} value
+stored in the hierarchy is used, but a different value can be specified:
+\code{minPts} in \code{hdbscan()} controls noise and density estimate smoothing,
+while \code{minPts} in \code{extractFOSC()} controls the cluster scale.
+}
+
+\subsection{Cluster extraction}{
+
+The simplified cluster tree is then post-processed recursively to extract
+clusters that maximize for each cluster \eqn{C_i}{Ci} the cost function
 
 \deqn{\max_{\delta_2, \dots, \delta_k} J = \sum\limits_{i=2}^{k} \delta_i
 S(C_i)}{ J = \sum \delta S(Ci) for all i clusters, } where
@@ -116,12 +138,12 @@ object \eqn{x_j}{Xj} that are satisfied. In the case of ties (such as
 solutions where no constraints were given), the unsupervised solution is
 used as a tiebreaker. See Campello et al (2013) for more details.
 
-As a third option, if one wishes to prioritize the degree at which the
+To prioritize the degree at which the
 unsupervised and semisupervised solutions contribute to the overall optimal
 solution, the parameter \eqn{\alpha} can be set to enable the extraction of
 clusters that maximize the \code{mixed} objective function
 
-\deqn{J = \alpha S(C_i) + (1 - \alpha) \gamma(C_i))}{J = \alpha S(Ci) + (1 -
+\deqn{J = \alpha S(C_i) + (1 - \alpha) \gamma(C_i)}{J = \alpha S(Ci) + (1 -
 \alpha) \gamma(Ci).}
 
 FOSC expects the pairwise constraints to be passed as either 1) an
@@ -135,15 +157,13 @@ correspond to integer vectors of constraints (positive indices for
 should-link, negative indices for should-not-link). Again, see the examples
 section for a demonstration of this.
 
-The parameters to the input function correspond to the concepts discussed
-above. The \code{minPts} parameter to represent the minimum cluster size to
-extract. The optional \code{constraints} parameter contains the pairwise,
-instance-level constraints of the data. The optional \code{alpha} parameters
-controls whether the mixed objective function is used (if \code{alpha} is
-greater than 0). If the \code{validate_constraints} parameter is set to
-true, the constraints are checked (and fixed) for symmetry (if point A has a
-should-link constraint with point B, point B should also have the same
-constraint). Asymmetric constraints are not supported.
+If \code{validate_constraints} is \code{TRUE}, the constraints are checked (and fixed)
+for symmetry (if point A has a should-link constraint with point B, point B
+should also have the same constraint). Asymmetric constraints are not
+supported. The mixed objective function is used if \code{alpha} is greater than 0.
+}
+
+\subsection{Unstable branch pruning}{
 
 Unstable branch pruning was not discussed by Campello et al (2013), however
 in some data sets it may be the case that specific subbranches scores are
@@ -154,27 +174,39 @@ sets, where there exists locally very stable branches surrounded by unstable
 branches that contain more than \code{minPts} points.
 \code{prune_unstable = TRUE} will remove the unstable branches.
 }
+}
 \examples{
 data("moons")
 
 ## Regular HDBSCAN using stability-based extraction (unsupervised)
 cl <- hdbscan(moons, minPts = 5)
 cl$cluster
+hullplot(moons, cl)
 
-## Constraint-based extraction from the HDBSCAN hierarchy
-## (w/ stability-based tiebreaker (semisupervised))
+## Semisupervised constraint-based extraction from the HDBSCAN hierarchy
+## alpha = 0: clusters are chosen to satisfy as many constraints as possible,
+##            cluster stability only breaks ties.
+## constraint: point 12 should link with 49, but not with 47
 cl_con <- extractFOSC(cl$hc, minPts = 5,
-  constraints = list("12" = c(49, -47)))
+  constraints = list("12" = c(+49, -47)),
+  alpha = 0)
 cl_con$cluster
+hullplot(moons, cl_con)
 
-## Alternative formulation: Constraint-based extraction from the HDBSCAN hierarchy
-## (w/ stability-based tiebreaker (semisupervised)) using distance thresholds
+## Semisupervised alternative formulation using constraints on distances
+## constraint: +1: Link points with a distance < 0.1;
+##             -1: do not link points with distance > 1.0;
+##              0: no preference for all other links.
 dist_moons <- dist(moons)
 cl_con2 <- extractFOSC(cl$hc, minPts = 5,
-  constraints = ifelse(dist_moons < 0.1, 1L,
-                ifelse(dist_moons > 1, -1L, 0L)))
+  constraints = ifelse(dist_moons < 0.1, +1L,
+                ifelse(dist_moons > 1.0, -1L, 0L)),
+  alpha = 0)
+hullplot(moons, cl_con)
 
-cl_con2$cluster # same as the second example
+## Unsupervised extraction with a distance threshold (HDBSCAN(e))
+cl_dist <- extractFOSC(cl$hc, cluster_selection_epsilon = 1)
+hullplot(moons, cl_dist)
 }
 \references{
 Campello, Ricardo JGB, Davoud Moulavi, Arthur Zimek, and Joerg
@@ -193,10 +225,16 @@ Other clustering functions:
 \code{\link[=ncluster]{ncluster()}},
 \code{\link[=optics]{optics()}},
 \code{\link[=sNNclust]{sNNclust()}}
+
+Other HDBSCAN functions:
+\code{\link[=glosh]{glosh()}},
+\code{\link[=hdbscan]{hdbscan()}},
+\code{\link[=mst_dist]{mst_dist()}}
 }
 \author{
 Matt Piekenbrock
 }
+\concept{HDBSCAN functions}
 \concept{clustering functions}
 \keyword{clustering}
 \keyword{model}

@@ -34,7 +34,7 @@ knn_adj <- adjacencylist(knn5)
 knn_adj[1:3]
 
 ## ----plot-knn-----------------------------------------------------------------
-plot(knn5, x, pch = 19, main = "5-nearest-neighbor graph")
+plot(knn5, x, asp = 1, cex = .5, main = "5-nearest-neighbor graph")
 
 ## ----reduce-knn---------------------------------------------------------------
 knn10 <- kNN(x, k = 10)
@@ -54,8 +54,12 @@ query_knn$id
 query_knn$dist
 
 ## ----plot-query---------------------------------------------------------------
-plot(query_knn, x, col = "grey70", main = "Neighbors of query points")
+plot(query_knn, x, col = "grey", asp = 1, main = "Neighbors of query points")
 points(query, pch = 4, lwd = 2, cex = 1.3)
+symbols(query[1,1], query[1,2], circles = query_knn$dist[1,4], 
+        inches = FALSE, add = TRUE)
+symbols(query[2,1], query[1,2], circles = query_knn$dist[2,4], 
+        inches = FALSE, add = TRUE)
 
 ## ----frnn---------------------------------------------------------------------
 fr <- frNN(x, eps = 0.25)
@@ -70,7 +74,8 @@ identical(adjacencylist(fr), fr$id)
 which(lengths(fr$id) == 0L)
 
 ## ----plot-frnn----------------------------------------------------------------
-plot(fr, x, pch = 19, main = "Fixed-radius graph (eps = 0.25)")
+plot(fr, x, pch = 19, asp = 1, cex = .5,
+     main = "Fixed-radius graph (eps = 0.25)")
 
 ## ----reduce-frnn--------------------------------------------------------------
 fr_wide <- frNN(x, eps = 0.30)

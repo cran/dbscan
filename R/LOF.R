@@ -21,7 +21,7 @@
 #' Local Outlier Factor Score
 #'
 #' Calculate the Local Outlier Factor (LOF) score for each data point using a
-#' kd-tree to speed up kNN search.
+#' k-d tree to speed up kNN search.
 #'
 #' LOF compares the local reachability density (lrd) of a point to the lrd of
 #' its neighbors. A LOF score of approximately 1 indicates that the lrd around
@@ -31,7 +31,7 @@
 #' than 1.
 #'
 #' If a data matrix is specified, then Euclidean distances and fast nearest
-#' neighbor search using a kd-tree is used.
+#' neighbor search using a k-d tree is used.
 #'
 #' **Note on duplicate points:** If there are more than `minPts`
 #' duplicates of a point in the data, then LOF the local readability distance
@@ -98,7 +98,7 @@ lof <- function(x, minPts = 5, ...) {
   }
   minPts <- .validate_integer_scalar(minPts, "minPts", min = 2)
 
-  args <- c("search", "bucketSize", "splitRule", "approx")
+  args <- c("search", "bucketSize", "splitRule", "shrinkRule", "approx")
   m <- pmatch(names(extra), args)
   if (anyNA(m))
     stop("Unknown parameter: ",
@@ -109,6 +109,7 @@ lof <- function(x, minPts = 5, ...) {
   search <- .parse_search(search)
   splitRule <- extra$splitRule %||% "suggest"
   splitRule <- .parse_splitRule(splitRule)
+  shrinkRule <- .parse_shrinkRule(extra$shrinkRule %||% "suggest")
   bucketSize <- .validate_bucket_size(extra$bucketSize %||% 10L)
   approx <- .validate_nonnegative_scalar(extra$approx %||% 0, "approx")
 
@@ -159,7 +160,7 @@ lof <- function(x, minPts = 5, ...) {
       dist = dist)
 
   } else{
-    ### Use kd-tree
+    ### Use k-d tree
     x <- .as_finite_numeric_matrix(x)
 
     ret <- lof_kNN(
@@ -168,6 +169,7 @@ lof <- function(x, minPts = 5, ...) {
       as.integer(search),
       as.integer(bucketSize),
       as.integer(splitRule),
+      as.integer(shrinkRule),
       as.double(approx)
     )
   }

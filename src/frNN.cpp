@@ -10,6 +10,7 @@
 
 
 #include <Rcpp.h>
+#include "ann_raii.h"
 #include "ANN/ANN.h"
 #include "regionQuery.h"
 
@@ -17,15 +18,15 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 List frNN_int(NumericMatrix data, double eps, int type,
-  int bucketSize, int splitRule, double approx) {
+  int bucketSize, int splitRule, int shrinkRule, double approx) {
 
-  // kd-tree uses squared distances
+  // k-d tree uses squared distances
   double eps2 = eps*eps;
 
   // copy data
   int nrow = data.nrow();
   int ncol = data.ncol();
-  ANNpointArray dataPts = annAllocPts(nrow, ncol);
+  ANNPoints dataPts(nrow, ncol);
   for(int i = 0; i < nrow; i++){
     for(int j = 0; j < ncol; j++){
       (dataPts[i])[j] = data(i, j);
@@ -33,15 +34,10 @@ List frNN_int(NumericMatrix data, double eps, int type,
   }
   //Rprintf("Points copied.\n");
 
-  // create kd-tree (1) or linear search structure (2)
-  ANNpointSet* kdTree = NULL;
-  if (type==1){
-    kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
-      (ANNsplitRule)  splitRule);
-  } else{
-    kdTree = new ANNbruteForce(dataPts, nrow, ncol);
-  }
-  //Rprintf("kd-tree ready. starting DBSCAN.\n");
+  // create k-d tree (1), linear search structure (2), or bd-tree (4)
+  auto kdTree = make_ann_tree(dataPts.get(), nrow, ncol, type,
+    bucketSize, splitRule, shrinkRule);
+  //Rprintf("k-d tree ready. starting DBSCAN.\n");
 
   // frNN
   //std::vector< IntegerVector > id; id.resize(nrow);
@@ -53,7 +49,7 @@ List frNN_int(NumericMatrix data, double eps, int type,
     if (!(p % 100)) Rcpp::checkUserInterrupt();
 
     //Rprintf("processing point %d\n", p+1);
-    nn N = regionQueryDist(p, dataPts, kdTree, eps2, approx);
+    nn N = regionQueryDist(p, dataPts.get(), kdTree.get(), eps2, approx);
 
     // fix index
     //std::transform(N.first.begin(), N.first.end(),
@@ -76,11 +72,6 @@ List frNN_int(NumericMatrix data, double eps, int type,
     dist[p] = sqrt(dists);
   }
 
-  // cleanup
-  delete kdTree;
-  annDeallocPts(dataPts);
-  // annClose(); is now done globally in the package
-
   // prepare results
   List ret;
   ret["dist"] = dist;
@@ -91,15 +82,15 @@ List frNN_int(NumericMatrix data, double eps, int type,
 
 // [[Rcpp::export]]
 List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int type,
-  int bucketSize, int splitRule, double approx) {
+  int bucketSize, int splitRule, int shrinkRule, double approx) {
 
-  // kd-tree uses squared distances
+  // k-d tree uses squared distances
   double eps2 = eps*eps;
 
   // copy data
   int nrow = data.nrow();
   int ncol = data.ncol();
-  ANNpointArray dataPts = annAllocPts(nrow, ncol);
+  ANNPoints dataPts(nrow, ncol);
   for(int i = 0; i < nrow; i++){
     for(int j = 0; j < ncol; j++){
       (dataPts[i])[j] = data(i, j);
@@ -108,7 +99,7 @@ List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int typ
 
   int nrow_q = query.nrow();
   int ncol_q = query.ncol();
-  ANNpointArray queryPts = annAllocPts(nrow_q, ncol_q);
+  ANNPoints queryPts(nrow_q, ncol_q);
   for(int i = 0; i < nrow_q; i++){
     for(int j = 0; j < ncol_q; j++){
       (queryPts[i])[j] = query(i, j);
@@ -116,15 +107,10 @@ List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int typ
   }
   //Rprintf("Points copied.\n");
 
-  // create kd-tree (1) or linear search structure (2)
-  ANNpointSet* kdTree = NULL;
-  if (type==1){
-    kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
-      (ANNsplitRule)  splitRule);
-  } else{
-    kdTree = new ANNbruteForce(dataPts, nrow, ncol);
-  }
-  //Rprintf("kd-tree ready. starting DBSCAN.\n");
+  // create k-d tree (1), linear search structure (2), or bd-tree (4)
+  auto kdTree = make_ann_tree(dataPts.get(), nrow, ncol, type,
+    bucketSize, splitRule, shrinkRule);
+  //Rprintf("k-d tree ready. starting DBSCAN.\n");
 
   // frNN
   //std::vector< IntegerVector > id; id.resize(nrow);
@@ -137,7 +123,7 @@ List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int typ
 
     //Rprintf("processing point %d\n", p+1);
     ANNpoint queryPt = queryPts[p];
-    nn N = regionQueryDist_point(queryPt, dataPts, kdTree, eps2, approx);
+    nn N = regionQueryDist_point(queryPt, dataPts.get(), kdTree.get(), eps2, approx);
 
     // fix index
     //std::transform(N.first.begin(), N.first.end(),
@@ -159,12 +145,6 @@ List frNN_query_int(NumericMatrix data, NumericMatrix query, double eps, int typ
     id[p] = ids+1;
     dist[p] = sqrt(dists);
   }
-
-  // cleanup
-  delete kdTree;
-  annDeallocPts(dataPts);
-  annDeallocPts(queryPts);
-  // annClose(); is now done globally in the package
 
   // prepare results
   List ret;

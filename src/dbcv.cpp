@@ -133,7 +133,7 @@ ANNdist inv_density(ANNdist cdist){
 //     }
 //   }
 //
-//   // create kd-tree (1) or linear search structure (2)
+//   // create k-d tree (1) or linear search structure (2)
 //   ANNpointSet* kdTree = new ANNkd_tree(dataPts, nrow, ncol, 30, (ANNsplitRule)  5);
 //
 //   // The all core dists to
@@ -239,7 +239,7 @@ NumericMatrix dspc(const List& cl_idx, const List& internal_nodes, const Integer
         IntegerVector int_idx = combine(rel_i_idx, rel_j_idx);
 
         // Get the pairwise MST
-        NumericMatrix pairwise_mst = mst(dist_subset(mrd_dist, int_idx), int_idx.length());
+        NumericMatrix pairwise_mst = mst_dist_cpp(dist_subset(mrd_dist, int_idx), int_idx.length());
 
         // Do lots of indexing / casting
         const IntegerVector from_int = seq_len(rel_i_idx.length());

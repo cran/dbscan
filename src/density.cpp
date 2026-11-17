@@ -9,30 +9,30 @@
 
 
 #include <Rcpp.h>
+#include "ann_raii.h"
 #include "ANN/ANN.h"
 #include "regionQuery.h"
 
 using namespace Rcpp;
 
 // faster implementation of counting point densities from a matrix
-// using a kd-tree
+// using a k-d tree
 // [[Rcpp::export]]
 IntegerVector dbscan_density_int(
     NumericMatrix data, double eps,
-    int type, int bucketSize, int splitRule, double approx) {
+    int type, int bucketSize, int splitRule, int shrinkRule, double approx) {
 
-  // kd-tree uses squared distances
+  // k-d tree uses squared distances
   double eps2 = eps*eps;
 
-  ANNpointSet* kdTree = NULL;
-  ANNpointArray dataPts = NULL;
+  ANNPoints dataPts;
   int nrow = NA_INTEGER;
   int ncol= NA_INTEGER;
 
-  // copy data for kd-tree
+  // copy data for k-d tree
   nrow = data.nrow();
   ncol = data.ncol();
-  dataPts = annAllocPts(nrow, ncol);
+  dataPts = ANNPoints(nrow, ncol);
   for (int i = 0; i < nrow; i++){
     for (int j = 0; j < ncol; j++){
       (dataPts[i])[j] = data(i, j);
@@ -40,11 +40,10 @@ IntegerVector dbscan_density_int(
   }
   //Rprintf("Points copied.\n");
 
-  // create kd-tree (1) or linear search structure (2)
-  if (type==1) kdTree = new ANNkd_tree(dataPts, nrow, ncol, bucketSize,
-    (ANNsplitRule) splitRule);
-  else kdTree = new ANNbruteForce(dataPts, nrow, ncol);
-  //Rprintf("kd-tree ready. starting DBSCAN.\n");
+  // create k-d tree (1) or linear search structure (2)
+  auto kdTree = make_ann_tree(dataPts.get(), nrow, ncol, type,
+    bucketSize, splitRule, shrinkRule);
+  //Rprintf("k-d tree ready. starting DBSCAN.\n");
 
   std::vector<int> N;
   IntegerVector count(nrow);
@@ -53,14 +52,9 @@ IntegerVector dbscan_density_int(
     //Rprintf("processing point %d\n", i+1);
     if (!(i % 100)) Rcpp::checkUserInterrupt();
 
-    N = regionQuery(i, dataPts, kdTree, eps2, approx);
+    N = regionQuery(i, dataPts.get(), kdTree.get(), eps2, approx);
     count[i] = N.size();
   }
-
-  // cleanup
-  if (kdTree != NULL) delete kdTree;
-  if (dataPts != NULL)  annDeallocPts(dataPts);
-  // annClose(); is now done globally in the package
 
   return count;
 }

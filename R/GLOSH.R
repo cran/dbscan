@@ -20,7 +20,7 @@
 #' Global-Local Outlier Score from Hierarchies
 #'
 #' Calculate the Global-Local Outlier Score from Hierarchies (GLOSH) score for
-#' each data point using a kd-tree to speed up kNN search.
+#' each data point using a k-d tree to speed up kNN search.
 #'
 #' GLOSH compares the density of a point to densities of any points associated
 #' within current and child clusters (if any). Points that have a substantially
@@ -45,6 +45,8 @@
 #' @return A numeric vector of length equal to the size of the original data
 #' set containing GLOSH values for all data points.
 #' @author Matt Piekenbrock
+#'
+#' @family HDBSCAN functions
 #'
 #' @references Campello, Ricardo JGB, Davoud Moulavi, Arthur Zimek, and Joerg
 #' Sander. Hierarchical density estimates for data clustering, visualization,
@@ -118,8 +120,8 @@ glosh <- function(x, k = 4, ...) {
     mrd <- mrd(x_dist, d$dist[, k - 1])
 
     # need to assemble hclust object manually
-    mst <- mst(mrd, n)
-    hc <- hclustMergeOrder(mst, order(mst[, 3]))
+    m <- mst_dist_cpp(mrd, n)
+    hc <- hclustMergeOrder(m, order(m[, 3]))
   } else if (inherits(x, "hclust")) {
     hc <- x
     n <- nrow(hc$merge) + 1

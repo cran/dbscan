@@ -25,7 +25,8 @@ fixed-radius nearest neighbors.}
 core points (including the point itself).}
 
 \item{weights}{numeric; weights for the data points. Only needed to perform
-weighted clustering.}
+weighted clustering. The sum of the weights of the points in an eps
+neighborhood (instead of their number) is compared to \code{minPts}.}
 
 \item{borderPoints}{logical; should border points be assigned to clusters.
 The default is \code{TRUE} for regular DBSCAN. If \code{FALSE} then border
@@ -55,7 +56,7 @@ core point.
 }
 \description{
 Fast reimplementation of the DBSCAN (Density-based spatial clustering of
-applications with noise) clustering algorithm using a kd-tree.
+applications with noise) clustering algorithm using a k-d tree.
 }
 \details{
 The
@@ -69,19 +70,22 @@ algorithm as described by Ester et al (1996). DBSCAN performs the following step
 \enumerate{
 \item Estimate the density
 around each data point by counting the number of points in a user-specified
-eps-neighborhood and applies a used-specified minPts thresholds to identify
+eps-neighborhood and applies a user-specified minPts threshold to identify
 \itemize{
-\item core points (points with more than minPts points in their neighborhood),
+\item core points (points with at least minPts points in their neighborhood,
+including the point itself),
 \item border points (non-core points with a core point in their neighborhood) and
 \item noise points (all other points).
 }
 \item Core points form the backbone of clusters by joining them into
 a cluster if they are density-reachable from each other (i.e., there is a chain of core
 points where one falls inside the eps-neighborhood of the next).
-\item Border points are assigned to clusters. The algorithm needs parameters
+\item Border points are assigned to clusters.
+}
+
+The algorithm needs the parameters
 \code{eps} (the radius of the epsilon neighborhood) and \code{minPts} (the
 density threshold).
-}
 
 Border points are arbitrarily assigned to clusters in the original
 algorithm. DBSCAN* (see Campello et al 2013) treats all border points as
@@ -91,7 +95,7 @@ noise points. This is implemented with \code{borderPoints = FALSE}.
 \subsection{Specifying the Data}{
 
 If \code{x} is a matrix or a data.frame, then fast fixed-radius nearest
-neighbor computation using a kd-tree is performed using Euclidean distance.
+neighbor computation using a k-d tree is performed using Euclidean distance.
 See \code{\link[=frNN]{frNN()}} for more information on the parameters related to
 nearest neighbor search. \strong{Note} that only numerical values are allowed in \code{x}.
 
@@ -224,7 +228,7 @@ if (requireNamespace("fpc", quietly = TRUE) &&
     names = c('fpc', 'dbscan (dist)', 'dbscan (linear)', 'dbscan (kdtree)'),
     main = "Runtime comparison in ms")
 
-  ## speedup of the kd-tree-based version compared to the fpc implementation
+  ## speedup of the k-d tree-based version compared to the fpc implementation
   median(t_fpc$time) / median(t_dbscan$time)
 }}
 

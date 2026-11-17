@@ -27,32 +27,82 @@
 #' stability-based flat cluster extraction. HDBSCAN essentially computes the
 #' hierarchy of all DBSCAN* clusterings, and
 #' then uses a stability-based extraction method to find optimal cuts in the
-#' hierarchy, thus producing a flat solution.
+#' hierarchy, thus producing a flat solution. It uses Prim's algorithm and
+#' is memory efficient by avoiding to create a complete distance matrix.
 #'
-#' HDBSCAN performs the following steps:
+#' ## The algorithm
 #'
-#' 1. Compute mutual reachability distance mrd between points
-#'    (based on distances and core distances).
-#' 2. Use mdr as a distance measure to construct a minimum spanning tree.
-#' 3. Prune the tree using stability.
-#' 4. Extract the clusters.
+#' The algorithm uses as the main parameter `minPts` which is used in several
+#' of the HDBSCAN steps:
 #'
-#' Additional, related algorithms including the "Global-Local Outlier Score
-#' from Hierarchies" (GLOSH; see section 6 of Campello et al., 2015)
-#' is available in function [glosh()]
-#' and the ability to cluster based on instance-level constraints (see
-#' section 5.3 of Campello et al. 2015) are supported. The algorithms only need
-#' the parameter `minPts`.
+#' 1. Compute mutual reachability distances from core distances. For core distances,
+#'    `minPts` is a smoothing parameter for the density estimates;
+#'    larger values for `minPts` give larger and smoother density estimates.
+#' 2. Construct a minimum spanning tree from the mutual reachability distances.
+#' 3. Prune the tree using stability. Here `minPts` controls the minimum
+#'    cluster size because splits are only allowed when both branches
+#'    have at least `minPts` points.
+#' 4. Extract the clusters from the pruned tree.
 #'
-#' Note that `minPts` not only acts as a minimum cluster size to detect,
-#' but also as a "smoothing" factor of the density estimates implicitly
-#' computed from HDBSCAN.
+#' The individual steps are described in the following.
 #'
-#' When using the optional parameter `cluster_selection_epsilon`,
+#' ## Core and mutual reachability distances
+#'
+#' These can be calculated using the following two exposed functions:
+#'
+#' * `coredist()`: The core distance is defined for each point as
+#' the distance to the (`minPts - 1`)-th nearest neighbor.
+#' It produces a density estimate where larger values for `minPts` lead to
+#' larger and smoother estimates. The core distance is
+#  calculated using [`kNNdist()`] with `k = minPts -1`.
+#' For matrix data, a fast k-d tree based on Euclidean distance is used.
+#' Additional parameters to `coredist()` are passed on to `kNNdist()`. A
+#' core distance vector is returned.
+#'
+#' * `mrdist()`: The mutual reachability distance is defined between two points as
+#' `mrd(a, b) = max(coredist(a), coredist(b), dist(a, b))`.
+#' It has the effect of increasing distances in low density areas, separating
+#' clusters better.
+#'
+#' To use non-Euclidean distances, the call `hdbscan()`, `coredist()`,
+#' or `mrdist()` with a precomputed distance matrix.
+#'
+#'
+#' ## Minimum spanning tree construction
+#'
+#' [`mst_dist()`] constructs a MST from a data from the mutual
+#' reachability distance matrix. Since distance matrices
+#' are of size \eqn{O(n^2)} and thus can become very large,
+#' [`mst_mrdist()`] is also provides which directly constructs the MST from
+#' matrix data without creating the full distance matrix.
+#' This reduces memory complexity
+#' \eqn{O(d n)} and speeds up the calculation, but
+#' only works with Euclidean distances.
+#'
+#' ## Tree pruning and cluster selection
+#'
+#' The MST is pruned using stability and clusters are extracted
+#' in the unsupervised version implemented in [`extractFOSC()`].
+#' Because one `minPts` value sets both the density smoothing and the minimum
+#' cluster size in HDBSCAN, using a different minimum cluster size
+#' requires an explicit call to [extractFOSC()] with the new `minPts`,
+#' e.g., `extractFOSC(res, minPts = 20)`. This keeps the
+#' density estimates using the original `minPts`and the hierarchy of `res`,
+#' but recomputed stability and cluster extraction using the new `minPts` value.
+#'
+#'
+#' ## HDBSCAN* and DBSCAN*
+#'
+#' Campello, Moulavi, and Sander (2013) introduced DBSCAN* and HDBSCAN*
+#' and demonstrated that for a fixed minimum points parameter `minPts`,
+#' the HDBSCAN* hierarchy encodes a one-to-one correspondence with the complete
+#' set of flat clusterings obtainable by DBSCAN* across every possible radius
+#' `eps`.
+#' Malzer and Baum (2020) describe that
 #' a combination between DBSCAN* and HDBSCAN* can be achieved
-#' (see Malzer & Baum 2020). This means that part of the
-#' tree is affected by `cluster_selection_epsilon` as if
-#' running DBSCAN* with `eps` = `cluster_selection_epsilon`.
+#' by using a `cluster_selection_epsilon` greater than 0.0.
+#' The tree below `cluster_selection_epsilon` produces
+#' a result identical to DBSCAN* with `eps = cluster_selection_epsilon`.
 #' The remaining part (on levels above the threshold) is still
 #' processed by HDBSCAN*'s stability-based selection algorithm
 #' and can therefore return clusters of variable densities.
@@ -60,22 +110,26 @@
 #' the parameter value is chosen too large, or if there aren't
 #' enough clusters of variable densities. In this case, the result
 #' will be equal to DBSCAN*.
-# `cluster_selection_epsilon` is especially useful for cases
+#' `cluster_selection_epsilon` is especially useful for cases
 #' where HDBSCAN* produces too many small clusters that
 #' need to be merged, while still being able to extract clusters
 #' of variable densities at higher levels.
 #'
-#' `coredist()`: The core distance is defined for each point as
-#' the distance to the `MinPts - 1`'s neighbor.
-#' It is a density estimate equivalent to `kNNdist()` with `k = MinPts -1`.
+#' ## Cluster membership prediction for new points
 #'
-#' `mrdist()`: The mutual reachability distance is defined between two points as
-#' `mrd(a, b) = max(coredist(a), coredist(b), dist(a, b))`. This distance metric is used by
-#' HDBSCAN. It has the effect of increasing distances in low density areas.
-#'
-#' `predict()` assigns each new data point to the same cluster as the nearest point
+#' * `predict()` assigns each new data point to the same cluster as the nearest point
 #' if it is not more than that points core distance away. Otherwise the new point
 #' is classified as a noise point (i.e., cluster ID 0).
+#'
+#' ## Related Methods
+#'
+#' * [extractFOSC()] implements a more general framework for clusters
+#'   selection from hierarchies (i.e., dendrograms)
+#'   In addition to HDBSCAN's unsupervised
+#'   cluster extraction, it also provides semisupervised methods with cluster
+#'   constraints.
+#'
+#' * [glosh()] implements the GLOSH outlier score.
 #' @aliases hdbscan HDBSCAN print.hdbscan
 #'
 #' @family HDBSCAN functions
@@ -83,9 +137,13 @@
 #'
 #' @param x a data matrix (Euclidean distances are used) or a [dist] object
 #' calculated with an arbitrary distance metric.
-#' @param minPts integer; Minimum size of clusters. See details.
+#' @param minPts integer; Main parameter to control density estimate smoothing
+#'   and the minimum clusters size. See details. For `mrdist()` (and
+#'   [mst_mrdist()]) it can be omitted if `coredist` is specified.
 #' @param cluster_selection_epsilon double; a distance threshold below which
-#  no clusters should be selected (see Malzer & Baum 2020)
+#'  no clusters should be selected (see Malzer & Baum 2020). The threshold is
+#'  specified in mutual reachability distance (see `mrdist()`). The default of
+#'  0.0 means this feature is not used.
 #' @param gen_hdbscan_tree logical; should the robust single linkage tree be
 #' explicitly computed (see cluster tree in Chaudhuri et al, 2010).
 #' @param gen_simplified_tree logical; should the simplified hierarchy be
@@ -111,7 +169,15 @@
 #' \item{membership_prob }{The probability or individual stability of a
 #' point within its clusters. Between 0 and 1.}
 #' \item{outlier_scores }{The GLOSH outlier score of each point. }
-#' \item{hc }{An [hclust] object of the HDBSCAN hierarchy. }
+#' \item{coredist }{ The core distance of each data point (see `coredist()`).}
+#' \item{hc }{An [hclust] object of the HDBSCAN hierarchy (the single-linkage
+#' hierarchy of the minimum spanning tree of the mutual reachability
+#' distances before condensing). It also stores the used `minPts` value
+#' and can be used as input for [extractFOSC()].}
+#' \item{hdbscan_tree }{ A [dendrogram] of the hierarchy. Only present if
+#' `gen_hdbscan_tree = TRUE`.}
+#' \item{simplified_tree }{ A [dendrogram] of the simplified hierarchy.
+#' Only present if `gen_simplified_tree = TRUE`.}
 #'
 #' `coredist()` returns a vector with the core distance for each data point.
 #'
@@ -195,6 +261,12 @@
 #' hdbe <- hdbscan(X, minPts = 3, cluster_selection_epsilon = 1)
 #' plot(hdbe, show_flat = TRUE)
 #' hullplot(X, hdbe, main = "HDBSCAN(e)")
+#'
+#' ## Manually perform the steps of HDBSCAN
+#' d <- mrdist(X, minPts = 3)
+#' mst_hc <- mst_dist(d)
+#' cl <- extractFOSC(mst_hc)
+#' hullplot(X, cl$cluster, main = "HDBSCAN")
 #' @export
 hdbscan <- function(x,
                     minPts,
@@ -213,27 +285,30 @@ hdbscan <- function(x,
   coredist <- coredist(x, minPts)
 
 
-  if (verbose) {
-    cat("Calculating the mutual reachability matrix distances...\n")
-  }
-  mrd <- mrdist(x, minPts, coredist = coredist)
-  n <- attr(mrd, "Size")
-
-  ## 2. Construct a minimum spanning tree and convert to RSL representation
+  ## 2. Construct a minimum spanning tree of the mutual reachability graph and
+  ## convert to RSL representation
   if (verbose) {
     cat("Constructing the minimum spanning tree...\n")
   }
-  mst <- mst(mrd, n)
-  hc <- hclustMergeOrder(mst, order(mst[, 3]))
-  hc$call <- match.call()
+  if (inherits(x, "dist")) {
+    hc <- mst_dist(mrdist(x, minPts, coredist = coredist))
+  } else {
+    ## data matrix: no n x n distance matrix is needed
+    hc <- mst_mrdist(x, minPts, coredist = coredist)
+  }
+  hc$minPts <- minPts # needed by extractFOSC() to check/default minPts
 
   ## 3. Prune the tree
   ## Process the hierarchy to retrieve all the necessary info needed by HDBSCAN
   if (verbose) {
     cat("Tree pruning...\n")
   }
+
+  # this is the same as extractFOCS(hc, minPts=minPts, cluster_selection_epsilon = cluster_selection_epsilon)
+  # but it also computes GLOSH scores.
   res <- computeStability(hc, minPts, compute_glosh = TRUE)
   res <- extractUnsupervised(res, cluster_selection_epsilon = cluster_selection_epsilon)
+
   cl <- attr(res, "cluster")
 
   ## 4. Extract the clusters
@@ -464,7 +539,7 @@ plot.hdbscan <-
       }
     }
 
-    ## Run the recursive plotting
+    ## Run the recursive plotting. This calls stats::plot.dendrogram()
     plot(
       dend,
       edge.root = TRUE,
@@ -482,12 +557,18 @@ plot.hdbscan <-
 
 #' @rdname hdbscan
 #' @export
-coredist <- function(x, minPts)
-  kNNdist(x, k = minPts - 1)
+coredist <- function(x, minPts, ...)
+  kNNdist(x, k = minPts - 1, ...)
 
 #' @rdname hdbscan
 #' @export
 mrdist <- function(x, minPts, coredist = NULL) {
+  if (is.null(coredist)) {
+    if (missing(minPts))
+      stop("minPts is required if coredist is not specified.")
+    minPts <- .validate_integer_scalar(minPts, "minPts", min = 2)
+  }
+
   if (inherits(x, "dist")) {
     .check_dist(x)
     x_dist <- x
@@ -507,6 +588,7 @@ mrdist <- function(x, minPts, coredist = NULL) {
   mr_dist <- mrd(x_dist, coredist)
   class(mr_dist) <- "dist"
   attr(mr_dist, "Size") <- attr(x_dist, "Size")
+  attr(mr_dist, "Labels") <- attr(x_dist, "Labels")
   attr(mr_dist, "Diag") <- FALSE
   attr(mr_dist, "Upper") <- FALSE
   attr(mr_dist, "method") <- paste0("mutual reachability (", attr(x_dist, "method"), ")")

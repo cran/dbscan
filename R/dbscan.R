@@ -21,7 +21,7 @@
 #' Density-based Spatial Clustering of Applications with Noise (DBSCAN)
 #'
 #' Fast reimplementation of the DBSCAN (Density-based spatial clustering of
-#' applications with noise) clustering algorithm using a kd-tree.
+#' applications with noise) clustering algorithm using a k-d tree.
 #'
 #' The
 #' implementation is significantly faster and can work with larger data sets
@@ -35,16 +35,19 @@
 #'
 #' 1. Estimate the density
 #'   around each data point by counting the number of points in a user-specified
-#'   eps-neighborhood and applies a used-specified minPts thresholds to identify
-#'      - core points (points with more than minPts points in their neighborhood),
+#'   eps-neighborhood and applies a user-specified minPts threshold to identify
+#'      - core points (points with at least minPts points in their neighborhood,
+#'        including the point itself),
 #'      - border points (non-core points with a core point in their neighborhood) and
 #'      - noise points (all other points).
 #' 2. Core points form the backbone of clusters by joining them into
 #'   a cluster if they are density-reachable from each other (i.e., there is a chain of core
 #'   points where one falls inside the eps-neighborhood of the next).
-#' 3. Border points are assigned to clusters. The algorithm needs parameters
-#'   `eps` (the radius of the epsilon neighborhood) and `minPts` (the
-#'   density threshold).
+#' 3. Border points are assigned to clusters.
+#'
+#' The algorithm needs the parameters
+#' `eps` (the radius of the epsilon neighborhood) and `minPts` (the
+#' density threshold).
 #'
 #' Border points are arbitrarily assigned to clusters in the original
 #' algorithm. DBSCAN* (see Campello et al 2013) treats all border points as
@@ -53,7 +56,7 @@
 #' ## Specifying the Data
 #'
 #' If `x` is a matrix or a data.frame, then fast fixed-radius nearest
-#' neighbor computation using a kd-tree is performed using Euclidean distance.
+#' neighbor computation using a k-d tree is performed using Euclidean distance.
 #' See [frNN()] for more information on the parameters related to
 #' nearest neighbor search. **Note** that only numerical values are allowed in `x`.
 #'
@@ -119,7 +122,8 @@
 #' @param minPts number of minimum points required in the eps neighborhood for
 #' core points (including the point itself).
 #' @param weights numeric; weights for the data points. Only needed to perform
-#' weighted clustering.
+#' weighted clustering. The sum of the weights of the points in an eps
+#' neighborhood (instead of their number) is compared to `minPts`.
 #' @param borderPoints logical; should border points be assigned to clusters.
 #' The default is `TRUE` for regular DBSCAN. If `FALSE` then border
 #' points are considered noise (see DBSCAN* in Campello et al, 2013).
@@ -237,7 +241,7 @@
 #'     names = c('fpc', 'dbscan (dist)', 'dbscan (linear)', 'dbscan (kdtree)'),
 #'     main = "Runtime comparison in ms")
 #'
-#'   ## speedup of the kd-tree-based version compared to the fpc implementation
+#'   ## speedup of the k-d tree-based version compared to the fpc implementation
 #'   median(t_fpc$time) / median(t_dbscan$time)
 #' }}
 #'
@@ -269,12 +273,12 @@ dbscan <-
     dist_method <- dist_method %||% "unknown"
 
     ### extra contains settings for frNN
-    ### search = "kdtree", bucketSize = 10, splitRule = "suggest", approx = 0
+    ### search = "kdtree", bucketSize = 10, splitRule = "suggest", shrinkRule = "suggest", approx = 0
     ### also check for MinPts for fpc compatibility (does not work for
     ### search method dist)
     extra <- list(...)
     args <-
-      c("MinPts", "search", "bucketSize", "splitRule", "approx")
+      c("MinPts", "search", "bucketSize", "splitRule", "shrinkRule", "approx")
     m <- pmatch(names(extra), args)
     if (anyNA(m))
       stop("Unknown parameter: ",
@@ -292,6 +296,7 @@ dbscan <-
     eps <- .validate_nonnegative_scalar(eps, "eps")
     search <- .parse_search(extra$search %||% "kdtree")
     splitRule <- .parse_splitRule(extra$splitRule %||% "suggest")
+    shrinkRule <- .parse_shrinkRule(extra$shrinkRule %||% "suggest")
     bucketSize <- .validate_bucket_size(extra$bucketSize %||% 10L)
     approx <- .validate_nonnegative_scalar(extra$approx %||% 0, "approx")
 
@@ -340,6 +345,7 @@ dbscan <-
       as.integer(search),
       as.integer(bucketSize),
       as.integer(splitRule),
+      as.integer(shrinkRule),
       as.double(approx),
       frNN
     )

@@ -11,6 +11,9 @@ db <- x %>% dbscan(eps = .42, minPts = 5)
 ## ----tidy---------------------------------------------------------------------
 tidy(db)
 
+## ----augment------------------------------------------------------------------
+augment(db, x)
+
 ## ----plot, fig.alt="DBSCAN clusters in the iris data"-------------------------
 augment(db, x) %>%
   ggplot(aes(x = Petal.Length, y = Petal.Width)) +
